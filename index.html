@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Standort erfassen</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f4f4f4;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 50px;
+    }
+    #location-form {
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    input, button {
+      padding: 10px;
+      margin: 5px;
+      width: 100%;
+    }
+    button {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #218838;
+    }
+  </style>
+</head>
+<body>
+  <h2>📍 Standort automatisch ermitteln</h2>
+  <form id="location-form">
+    <input type="text" id="latitude" name="latitude" placeholder="Breitengrad" required>
+    <input type="text" id="longitude" name="longitude" placeholder="Längengrad" required>
+    <button type="button" onclick="getLocation()">📡 Standort ermitteln</button>
+    <button type="submit">📤 An n8n senden</button>
+  </form>
+
+  <script>
+    function getLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+          document.getElementById('latitude').value = position.coords.latitude.toFixed(6);
+          document.getElementById('longitude').value = position.coords.longitude.toFixed(6);
+        }, function(error) {
+          alert('Fehler beim Abrufen des Standorts: ' + error.message);
+        });
+      } else {
+        alert("Geolocation wird von diesem Browser nicht unterstützt.");
+      }
+    }
+
+    document.getElementById('location-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const data = {
+        "Standortdaten - latitude (erster Wert in GoogleMaps)": document.getElementById('latitude').value,
+        "Standortdaten - longitude (zweiter Wert in GoogleMaps)": document.getElementById('longitude').value
+      };
+
+      fetch('https://n8n.ryzeup.ai/webhook-test/gps-form', { // <-- n8n Webhook hier einsetzen
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      })
+      .then(response => {
+        if (response.ok) {
+          alert('✅ Standort erfolgreich an n8n gesendet!');
+        } else {
+          alert('❌ Fehler beim Senden an n8n.');
+        }
+      })
+      .catch(error => {
+        alert('Fehler: ' + error);
+      });
+    });
+  </script>
+</body>
+</html>
