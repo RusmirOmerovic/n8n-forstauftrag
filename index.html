@@ -1,109 +1,139 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Standort erfassen</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    body {
-      font-size: 1.8rem;
-      padding: 2rem;
-      font-family: Arial, sans-serif;
-      background-color: #f0f0f0;
+    :root{
+      --bg:#f6f7f9; --card:#fff; --line:#e5e7eb;
+      --brand:#0f172a; --accent:#0ea5e9; --muted:#667085;
     }
-
-    h2 {
-      font-size: 2.6rem;
-      text-align: center;
-      margin-bottom: 2rem;
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);font-family:system-ui,Segoe UI,Roboto,Arial}
+    main{max-width:720px;margin:0 auto;padding:24px}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 6px 18px rgba(16,24,40,.06);padding:24px}
+    h2{margin:0 0 8px;font-size:26px;color:var(--brand)}
+    p.hint{margin:0 0 16px;color:var(--muted)}
+    .row{display:flex;gap:12px;flex-wrap:wrap;margin:12px 0}
+    input[type="text"]{
+      flex:1 1 220px;min-width:220px;padding:12px;border:1px solid var(--line);border-radius:10px;font-size:16px
     }
-
-    form {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+    button{
+      padding:12px 16px;border-radius:10px;border:1px solid var(--brand);background:var(--brand);color:#fff;cursor:pointer;font-weight:600
     }
-
-    input[type="text"],
-    button {
-      width: 90%;
-      max-width: 480px;
-      font-size: 2rem;
-      padding: 1rem;
-      margin-bottom: 1.5rem;
-      border-radius: 10px;
-      border: 1px solid #ccc;
-      box-shadow: 0 0 5px rgba(0,0,0,0.1);
-    }
-
-    button {
-      background-color: #28a745;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background-color: #218838;
-    }
+    button.secondary{background:#fff;color:var(--brand)}
+    #msg{margin-top:8px;color:#b45309}
+    .actions{display:none;gap:10px;flex-wrap:wrap;margin-top:12px}
   </style>
 </head>
 <body>
-  <h2>📍 Standort automatisch ermitteln</h2>
-  <p style="font-size: 1.4rem; color: #555; text-align: center; max-width: 500px; margin: 0 auto 2rem;">
-  ℹ️ Bitte Standortzugriff im Browser erlauben!<br>
-  Safari: <strong>Einstellungen → Datenschutz & Sicherheit → Ort → Safari → Aktivieren</strong><br>
-  Android: <strong>Standortdienste aktivieren + Browser-Berechtigung zulassen</strong>
-  </p>
+  <main>
+    <div class="card">
+      <h2>📍 Standort automatisch ermitteln</h2>
+      <p class="hint">
+        Bitte Standortzugriff im Browser erlauben.<br />
+        Safari: <strong>Einstellungen → Datenschutz & Sicherheit → Ort → Safari → Aktivieren</strong><br />
+        Android: <strong>Standortdienste aktivieren + Browser-Berechtigung zulassen</strong>
+      </p>
 
-  <form id="location-form" method="POST">
-    <input type="text" id="latitude" name="latitude" placeholder="Breitengrad" required>
-    <input type="text" id="longitude" name="longitude" placeholder="Längengrad" required>
-    <button type="button" onclick="getLocation()">📡 Standort ermitteln</button>
-    <button type="submit">📤 An n8n senden</button>
-  </form>
+      <!-- Manuelle Fallback-Eingabe -->
+      <div class="row">
+        <input type="text" id="latitude"  placeholder="Breitengrad (z. B. 48.137154)" />
+        <input type="text" id="longitude" placeholder="Längengrad (z. B. 11.576124)" />
+      </div>
+
+      <div class="row">
+        <button id="btn-locate">📡 Standort ermitteln & Formular öffnen</button>
+        <button id="btn-open-manual" class="secondary">✍️ Manuell eingeben & öffnen</button>
+        <button id="btn-open-empty"  class="secondary">↪️ Ohne Koordinaten fortfahren</button>
+      </div>
+
+      <div id="msg"></div>
+      <div id="actions" class="actions">
+        <!-- (sichtbar, wenn GPS verweigert wurde) -->
+        <button id="btn-open-manual-2" class="secondary">✍️ Manuell eingeben & öffnen</button>
+        <button id="btn-open-empty-2"  class="secondary">↪️ Ohne Koordinaten fortfahren</button>
+      </div>
+    </div>
+  </main>
 
   <script>
-  function getLocation() {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(function(position) {
-        document.getElementById('latitude').value = position.coords.latitude.toFixed(6);
-        document.getElementById('longitude').value = position.coords.longitude.toFixed(6);
-      }, function(error) {
-        alert('Fehler beim Abrufen des Standorts: ' + error.message);
-      });
-    } else {
-      alert("Geolocation wird von diesem Browser nicht unterstützt.");
+    // ------- Konfiguration -------
+    const DEFAULT_FORM_URL = "https://DEIN-N8N.HOST/form/XXXXXXXX";
+    const FORM_URL = new URLSearchParams(location.search).get("next") || DEFAULT_FORM_URL;
+
+    // ------- Hilfsfunktionen -------
+    const $ = sel => document.querySelector(sel);
+    const msg = $("#msg");
+    const actions = $("#actions");
+    const latEl = $("#latitude");
+    const lonEl = $("#longitude");
+
+    function normalizeCoord(v){
+      if (!v) return null;
+      v = String(v).trim().replace(",", ".");
+      const n = Number(v);
+      return Number.isFinite(n) ? n : null;
     }
-  }
+    function isValidLat(v){ return v >= -90 && v <= 90; }
+    function isValidLon(v){ return v >= -180 && v <= 180; }
 
-  document.getElementById('location-form').addEventListener('submit', async function(e) {
-    e.preventDefault();
-
-    const data = {
-      latitude: document.getElementById('latitude').value,
-      longitude: document.getElementById('longitude').value
-    };
-
-    try {
-      const response = await fetch('https://n8n.ryzeup.ai/webhook-test/gps-form', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-      });
-
-      if (response.ok) {
-        alert('✅ Standort erfolgreich an n8n gesendet!');
-      } else {
-        const text = await response.text();
-        alert('❌ Fehler beim Senden an n8n:\n' + text);
+    function openFormWith(lat, lon){
+      const u = new URL(FORM_URL);
+      if (lat != null && lon != null){
+        u.searchParams.set("lat", lat.toFixed(6));
+        u.searchParams.set("lon", lon.toFixed(6));
       }
-    } catch (error) {
-      alert('Fehler: ' + error.message);
+      location.href = u.toString();
     }
-  });
-</script>
+    function openFormNoGeo(){
+      const u = new URL(FORM_URL);
+      u.searchParams.set("noGeo","1");
+      location.href = u.toString();
+    }
 
+    // ------- Events -------
+    $("#btn-locate").addEventListener("click", () => {
+      msg.textContent = "Bitte Standortfreigabe erlauben…";
+      actions.style.display = "none";
+      if (!navigator.geolocation){
+        msg.textContent = "Geolocation wird von diesem Browser nicht unterstützt.";
+        actions.style.display = "flex";
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        p => {
+          const lat = p.coords.latitude;
+          const lon = p.coords.longitude;
+          // Felder auch füllen (falls Nutzer zurück will)
+          latEl.value = lat.toFixed(6);
+          lonEl.value = lon.toFixed(6);
+          openFormWith(lat, lon);
+        },
+        err => {
+          msg.textContent = "Ohne Koordinaten können keine Rettungspunkte ermittelt werden.";
+          actions.style.display = "flex";
+        },
+        { enableHighAccuracy:true, timeout:15000 }
+      );
+    });
+
+    function handleManualOpen(){
+      const lat = normalizeCoord(latEl.value);
+      const lon = normalizeCoord(lonEl.value);
+      if (lat == null || lon == null || !isValidLat(lat) || !isValidLon(lon)){
+        msg.textContent = "Bitte gültige Koordinaten eingeben (Lat −90..90, Lon −180..180) oder „Ohne Koordinaten fortfahren“.";
+        return;
+      }
+      openFormWith(lat, lon);
+    }
+
+    $("#btn-open-manual").addEventListener("click", handleManualOpen);
+    $("#btn-open-manual-2").addEventListener("click", handleManualOpen);
+
+    $("#btn-open-empty").addEventListener("click", openFormNoGeo);
+    $("#btn-open-empty-2").addEventListener("click", openFormNoGeo);
+  </script>
 </body>
 </html>
