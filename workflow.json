@@ -1,0 +1,262 @@
+{
+  "name": "Forstauftrag (GPS → PDF → Mail) – All-in-one (Rich)",
+  "nodes": [
+    {
+      "id": "eab35488-75ed-4bf3-b605-97dc64df6b55",
+      "name": "On form submission1",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -760,
+        -40
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "49b38fd5-ae69-4783-83cf-ac967b226d93",
+      "name": "Normalize Location",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        -520,
+        -40
+      ],
+      "parameters": {
+        "keepOnlySet": false,
+        "values": {
+          "number": [
+            {
+              "name": "lat",
+              "value": "={{$json.lat || $json.query?.lat || $json[\"Standortdaten - latitude (erster Wert in GoogleMaps)\"]}}"
+            },
+            {
+              "name": "lon",
+              "value": "={{$json.lon || $json.query?.lon || $json[\"Standortdaten - longitude (zweiter Wert in GoogleMaps)\"]}}"
+            }
+          ],
+          "boolean": [
+            {
+              "name": "noGeo",
+              "value": "={{$json.query?.noGeo ? true : false}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "a5bd1527-9087-48d0-9d78-0dcdad31af4b",
+      "name": "HTML (PDF)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -260,
+        -40
+      ],
+      "parameters": {
+        "language": "JavaScript",
+        "jsCode": "\nconst d = item.json;\nconst esc = s => String(s ?? '').replace(/[&<>\"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[m]));\nconst val = v => v == null ? '' : v;\nconst arr = a => Array.isArray(a) ? a.filter(Boolean).join(', ') : val(a);\n\nconst companyName = d.companyName || d['Unternehmensname'] || 'Unternehmen';\nconst logoUrl = d.companyLogoUrl || d['Firmenlogo URL'] || '';\n\nconst lat = d.lat ?? d['Standortdaten - latitude (erster Wert in GoogleMaps)'];\nconst lon = d.lon ?? d['Standortdaten - longitude (zweiter Wert in GoogleMaps)'];\nconst noGeo = d.noGeo === true || d.noGeo === '1' || d.noGeo === 1;\nconst hasCoords = !!lat && !!lon && !noGeo;\n\nlet weather = '–';\ntry {\n  if (d.weather) {\n    const desc = d.weather[0]?.description ?? '';\n    const temp = (d.main?.temp != null) ? Math.round(d.main.temp) + '°C' : '';\n    const wind = (d.wind?.speed != null) ? ('Wind ' + d.wind.speed + ' m/s') : '';\n    weather = [desc, temp, wind].filter(Boolean).join(' • ');\n  }\n} catch(e) {}\n\nconst now = new Date().toLocaleString('de-DE');\nconst rpArr = Array.isArray(d.top_3_rettungspunkte) ? d.top_3_rettungspunkte : [];\nconst rp = rpArr[0] || null;\n\nconst secAllg = [\n  ['Datum Arbeitstag', d['Datum Arbeitstag: '] ?? d['Datum Arbeitstag']],\n  ['Einsatzort', d['Einsatzort']],\n  ['Arbeitsverantwortlicher', d['Arbeitsverantwortlicher']],\n  ['weitere Einsatzkräfte', d['weitere Einsatzkräfte:']],\n  ['Ansprechpartner Kunde', d['Ansprechpartner Kunde: ']],\n  ['Ersthelfer vor Ort', d['Ersthelfer vor Ort: ']],\n];\nconst secSich = [\n  ['Verkehr an Straße', d['Verkehrsrechtliche Anordnung/Einsatz an Straße']],\n  ['Absperrung', d['Absperrung']],\n  ['Helfer (Posten)', d['Posten - wie viele Helfer? ']],\n  ['PSA geprüft/getragen', d['Persönliche Schutzausrüstung geprüft/getragen? ']],\n  ['Bemerkungen PSA', d['Bemerkungen zu Schutzausrüstung: ']],\n  ['Unterweisung im Trupp', d['Im Trupp/Arbeitsgruppe  unterwiesen?']],\n  ['Zustimmung', arr(d['Zustimmung:'])],\n];\nconst secMasch = [\n  ['Zufahrt Maschinen möglich', d['Zufahrt für Maschinen möglich? ']],\n  ['Maschinentyp', arr(d['Maschintyp'])],\n  ['Maschinenbediener', d['Maschinenbediener: ']],\n  ['Besondere Gefährdungen', arr(d['Besondere Gefährdungen:'])],\n  ['Maßnahmen bei besonderer Gefährdung', d['Maßnahmen bei besonderer Gefährdung eingeleitet?']],\n];\nconst secLoc = [\n  ['Standort (Lat, Lon)', hasCoords ? `${lat}, ${lon}` : 'keine Koordinaten'],\n  ['Wetter (Kurz)', weather],\n  ['Nächster Rettungspunkt', hasCoords\n    ? (rp ? `RP ${rp.rp_nr || rp.rp || ''} • ${rp.beschreibung || ''} • ${rp.entfernung_m || rp.entfernung || ''} m` : '–')\n    : 'keine Koordinaten'],\n];\n\nfunction table(rows){\n  return `<table>${rows.map(([k,v]) => `<tr><th>${esc(k)}</th><td>${esc(v)}</td></tr>`).join('')}</table>`;\n}\n\nconst html = `<!doctype html>\n<html lang=\"de\"><head><meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n<title>Forstauftrag</title>\n<style>\n  :root{\n    --brand:#0f172a; --muted:#667085; --line:#e5e7eb;\n    --sec-a:#e3f2fd; --sec-b:#e8f5e9; --sec-c:#fff3e0; --sec-d:#f3e8ff;\n    --sec-a-h:#1565c0; --sec-b-h:#2e7d32; --sec-c-h:#ef6c00; --sec-d-h:#6a1b9a;\n  }\n  *{box-sizing:border-box} body{margin:0;background:#fff;color:#111;font:14px/1.5 system-ui,Segoe UI,Roboto}\n  .sheet{max-width:900px;margin:0 auto;padding:28px 28px 60px}\n  .head{display:flex;gap:16px;align-items:flex-start;border-bottom:2px solid var(--brand);padding-bottom:12px;margin-bottom:16px}\n  .brand{flex:1}\n  .brand .title{font-weight:800;font-size:22px;letter-spacing:.3px;color:var(--brand)}\n  .brand .meta{color:var(--muted);font-size:12px;margin-top:4px}\n  .logo{min-width:160px;text-align:right}\n  .logo img{max-height:40px;max-width:160px;object-fit:contain}\n  .cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:10px 0 16px}\n  .card{border:1px solid var(--line);border-radius:10px;padding:12px}\n  .card h3{margin:0 0 6px;font-size:13px;text-transform:uppercase;letter-spacing:.4px;color:#334155}\n  .sec{margin-top:14px}\n  .sec h2{margin:0 0 8px;font-size:14px;font-weight:800;letter-spacing:.3px}\n  .sec-a h2{color:var(--sec-a-h)} .sec-b h2{color:var(--sec-b-h)} .sec-c h2{color:var(--sec-c-h)} .sec-d h2{color:var(--sec-d-h)}\n  table{width:100%;border-collapse:separate;border-spacing:0;border:1px solid var(--line);border-radius:12px;overflow:hidden}\n  th,td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}\n  th{width:36%;background:#f8fafb;text-align:left;font-weight:700;color:#111}\n  tr:nth-child(even) td{background:#fcfdff}\n  tr:last-child th,tr:last-child td{border-bottom:0}\n  .foot-fixed{position:fixed;left:0;right:0;bottom:0;border-top:1px solid var(--line);padding:8px 28px;color:#475569;font-size:12px;display:flex;justify-content:space-between;align-items:center;background:#fff}\n</style></head>\n<body>\n  <div class=\"sheet\">\n    <div class=\"head\">\n      <div class=\"brand\">\n        <div class=\"title\">Forstauftrag</div>\n        <div class=\"meta\">Erstellt: ${esc(now)}</div>\n      </div>\n      <div class=\"logo\">${logoUrl ? `<img src=\"${esc(logoUrl)}\" alt=\"Logo\">` : ''}</div>\n    </div>\n\n    <div class=\"cards\">\n      <div class=\"card\"><h3>Wetter</h3><div>${esc(weather)}</div></div>\n      <div class=\"card\"><h3>Nächster Rettungspunkt</h3><div>${\n        hasCoords\n          ? (rp ? `RP ${esc(rp.rp_nr || rp.rp || '')} • ${esc(rp.beschreibung || '')} • ${esc(rp.entfernung_m || rp.entfernung || '')} m` : '–')\n          : 'keine Koordinaten'\n      }</div></div>\n    </div>\n\n    <div class=\"sec sec-a\"><h2>Allgemeine Angaben</h2>${table(secAllg)}</div>\n    <div class=\"sec sec-b\"><h2>Sicherheit</h2>${table(secSich)}</div>\n    <div class=\"sec sec-c\"><h2>Maschinen & Maßnahmen</h2>${table(secMasch)}</div>\n    <div class=\"sec sec-d\"><h2>Standort & Bedingungen</h2>${table(secLoc)}</div>\n  </div>\n</body></html>`;\n\nconst footerTemplate = `\n  <style>\n    .f{font-family:system-ui,Segoe UI,Roboto;font-size:10px;color:#475569;display:flex;justify-content:space-between;width:100%;padding:0 12px}\n    .bar{height:2px;background:#0ea5e9;margin-bottom:6px}\n  </style>\n  <div class=\"bar\"></div>\n  <div class=\"f\"><div>${esc(companyName)}</div><div>Seite {{pageNumber}} / {{totalPages}}</div></div>\n`;\n\nreturn { ...d, html, footerTemplate };\n"
+      }
+    },
+    {
+      "id": "c74b0657-8240-4b4f-93be-e2ef56e7e9ff",
+      "name": "Convert to File",
+      "type": "n8n-nodes-base.moveBinaryData",
+      "typeVersion": 2,
+      "position": [
+        -20,
+        -40
+      ],
+      "parameters": {
+        "mode": "jsonToBinary",
+        "dataPropertyName": "html",
+        "binaryPropertyName": "files",
+        "options": {
+          "fileName": "index.html",
+          "mimeType": "text/html",
+          "encoding": "utf8"
+        }
+      }
+    },
+    {
+      "id": "24d4809b-105c-4bbe-a815-154df7b10a27",
+      "name": "HTML → PDF (Gotenberg)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 5,
+      "position": [
+        240,
+        -40
+      ],
+      "parameters": {
+        "url": "https://<YOUR-CLOUD-RUN-GOTENBERG>/forms/chromium/convert/html",
+        "method": "POST",
+        "sendBody": true,
+        "responseFormat": "file",
+        "options": {
+          "timeout": 600000
+        },
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "files",
+              "inputDataFieldName": "files"
+            },
+            {
+              "parameterType": "formData",
+              "name": "paperWidth",
+              "value": "210mm"
+            },
+            {
+              "parameterType": "formData",
+              "name": "paperHeight",
+              "value": "297mm"
+            },
+            {
+              "parameterType": "formData",
+              "name": "marginTop",
+              "value": "16mm"
+            },
+            {
+              "parameterType": "formData",
+              "name": "marginBottom",
+              "value": "16mm"
+            },
+            {
+              "parameterType": "formData",
+              "name": "marginLeft",
+              "value": "10mm"
+            },
+            {
+              "parameterType": "formData",
+              "name": "marginRight",
+              "value": "10mm"
+            },
+            {
+              "parameterType": "formData",
+              "name": "footerTemplate",
+              "value": "={{$json.footerTemplate}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "b3c66d07-0f98-4338-baef-d8206fb0e1cf",
+      "name": "Code (PDF meta)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        500,
+        -40
+      ],
+      "parameters": {
+        "language": "JavaScript",
+        "jsCode": "const ts=new Date().toISOString().slice(0,10);\nif (item.binary?.data) { item.binary.data.fileName=`Forstauftrag_${ts}.pdf`; item.binary.data.mimeType='application/pdf'; item.binary.data.fileExtension='pdf'; }\nreturn item;"
+      }
+    },
+    {
+      "id": "51487cb0-eae0-4c8e-9d02-17a3b2d5dfd4",
+      "name": "Send a message",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 3,
+      "position": [
+        760,
+        -40
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "toList": [
+          "rusmir.omerovic@web.de"
+        ],
+        "subject": "Forstauftrag – PDF-Bestätigung",
+        "message": "Im Anhang findest du das automatisch erzeugte PDF zum Forstauftrag.",
+        "options": {
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {
+                "binaryPropertyName": "data"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "connections": {
+    "eab35488-75ed-4bf3-b605-97dc64df6b55": {
+      "main": [
+        [
+          {
+            "node": "49b38fd5-ae69-4783-83cf-ac967b226d93",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "49b38fd5-ae69-4783-83cf-ac967b226d93": {
+      "main": [
+        [
+          {
+            "node": "a5bd1527-9087-48d0-9d78-0dcdad31af4b",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "a5bd1527-9087-48d0-9d78-0dcdad31af4b": {
+      "main": [
+        [
+          {
+            "node": "c74b0657-8240-4b4f-93be-e2ef56e7e9ff",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "c74b0657-8240-4b4f-93be-e2ef56e7e9ff": {
+      "main": [
+        [
+          {
+            "node": "24d4809b-105c-4bbe-a815-154df7b10a27",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "24d4809b-105c-4bbe-a815-154df7b10a27": {
+      "main": [
+        [
+          {
+            "node": "b3c66d07-0f98-4338-baef-d8206fb0e1cf",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "b3c66d07-0f98-4338-baef-d8206fb0e1cf": {
+      "main": [
+        [
+          {
+            "node": "51487cb0-eae0-4c8e-9d02-17a3b2d5dfd4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "active": false,
+  "createdAt": "2025-09-06T19:34:28.030064Z",
+  "meta": {
+    "instanceId": "e47f38cf-4fbd-4b54-9b8e-5e87bdb1adf4"
+  }
+}
