@@ -1,249 +1,1282 @@
 {
-  "name": "Forstauftrag (GPS → PDF → Mail) – All-in-one (Rich)",
+  "name": "forstform",
   "nodes": [
     {
-      "id": "eab35488-75ed-4bf3-b605-97dc64df6b55",
-      "name": "On form submission1",
-      "type": "n8n-nodes-base.manualTrigger",
-      "typeVersion": 1,
-      "position": [
-        -760,
-        -40
-      ],
-      "parameters": {}
-    },
-    {
-      "id": "49b38fd5-ae69-4783-83cf-ac967b226d93",
-      "name": "Normalize Location",
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 2,
-      "position": [
-        -520,
-        -40
-      ],
       "parameters": {
-        "keepOnlySet": false,
-        "values": {
-          "number": [
-            {
-              "name": "lat",
-              "value": "={{$json.lat || $json.query?.lat || $json[\"Standortdaten - latitude (erster Wert in GoogleMaps)\"]}}"
-            },
-            {
-              "name": "lon",
-              "value": "={{$json.lon || $json.query?.lon || $json[\"Standortdaten - longitude (zweiter Wert in GoogleMaps)\"]}}"
-            }
-          ],
-          "boolean": [
-            {
-              "name": "noGeo",
-              "value": "={{$json.query?.noGeo ? true : false}}"
-            }
-          ]
+        "mode": "jsonToBinary",
+        "convertAllData": false,
+        "sourceKey": "html",
+        "destinationKey": "files",
+        "options": {
+          "encoding": "utf8",
+          "fileName": "index.html"
         }
-      }
+      },
+      "type": "n8n-nodes-base.moveBinaryData",
+      "typeVersion": 1.1,
+      "position": [
+        -3488,
+        1056
+      ],
+      "id": "c06df9e9-a3c6-4c47-bcb8-5409c6497e33",
+      "name": "Move Binary Data (HTML file)"
     },
     {
-      "id": "a5bd1527-9087-48d0-9d78-0dcdad31af4b",
-      "name": "HTML (PDF)",
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "if (item.binary && item.binary.data) { item.binary.data.fileName = 'Forstauftrag.pdf'; item.binary.data.mimeType = 'application/pdf'; item.binary.data.fileExtension = 'pdf'; } return item;"
+      },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -260,
-        -40
+        -3056,
+        960
       ],
-      "parameters": {
-        "language": "JavaScript",
-        "jsCode": "\nconst d = item.json;\nconst esc = s => String(s ?? '').replace(/[&<>\"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[m]));\nconst val = v => v == null ? '' : v;\nconst arr = a => Array.isArray(a) ? a.filter(Boolean).join(', ') : val(a);\n\nconst companyName = d.companyName || d['Unternehmensname'] || 'Unternehmen';\nconst logoUrl = d.companyLogoUrl || d['Firmenlogo URL'] || '';\n\nconst lat = d.lat ?? d['Standortdaten - latitude (erster Wert in GoogleMaps)'];\nconst lon = d.lon ?? d['Standortdaten - longitude (zweiter Wert in GoogleMaps)'];\nconst noGeo = d.noGeo === true || d.noGeo === '1' || d.noGeo === 1;\nconst hasCoords = !!lat && !!lon && !noGeo;\n\nlet weather = '–';\ntry {\n  if (d.weather) {\n    const desc = d.weather[0]?.description ?? '';\n    const temp = (d.main?.temp != null) ? Math.round(d.main.temp) + '°C' : '';\n    const wind = (d.wind?.speed != null) ? ('Wind ' + d.wind.speed + ' m/s') : '';\n    weather = [desc, temp, wind].filter(Boolean).join(' • ');\n  }\n} catch(e) {}\n\nconst now = new Date().toLocaleString('de-DE');\nconst rpArr = Array.isArray(d.top_3_rettungspunkte) ? d.top_3_rettungspunkte : [];\nconst rp = rpArr[0] || null;\n\nconst secAllg = [\n  ['Datum Arbeitstag', d['Datum Arbeitstag: '] ?? d['Datum Arbeitstag']],\n  ['Einsatzort', d['Einsatzort']],\n  ['Arbeitsverantwortlicher', d['Arbeitsverantwortlicher']],\n  ['weitere Einsatzkräfte', d['weitere Einsatzkräfte:']],\n  ['Ansprechpartner Kunde', d['Ansprechpartner Kunde: ']],\n  ['Ersthelfer vor Ort', d['Ersthelfer vor Ort: ']],\n];\nconst secSich = [\n  ['Verkehr an Straße', d['Verkehrsrechtliche Anordnung/Einsatz an Straße']],\n  ['Absperrung', d['Absperrung']],\n  ['Helfer (Posten)', d['Posten - wie viele Helfer? ']],\n  ['PSA geprüft/getragen', d['Persönliche Schutzausrüstung geprüft/getragen? ']],\n  ['Bemerkungen PSA', d['Bemerkungen zu Schutzausrüstung: ']],\n  ['Unterweisung im Trupp', d['Im Trupp/Arbeitsgruppe  unterwiesen?']],\n  ['Zustimmung', arr(d['Zustimmung:'])],\n];\nconst secMasch = [\n  ['Zufahrt Maschinen möglich', d['Zufahrt für Maschinen möglich? ']],\n  ['Maschinentyp', arr(d['Maschintyp'])],\n  ['Maschinenbediener', d['Maschinenbediener: ']],\n  ['Besondere Gefährdungen', arr(d['Besondere Gefährdungen:'])],\n  ['Maßnahmen bei besonderer Gefährdung', d['Maßnahmen bei besonderer Gefährdung eingeleitet?']],\n];\nconst secLoc = [\n  ['Standort (Lat, Lon)', hasCoords ? `${lat}, ${lon}` : 'keine Koordinaten'],\n  ['Wetter (Kurz)', weather],\n  ['Nächster Rettungspunkt', hasCoords\n    ? (rp ? `RP ${rp.rp_nr || rp.rp || ''} • ${rp.beschreibung || ''} • ${rp.entfernung_m || rp.entfernung || ''} m` : '–')\n    : 'keine Koordinaten'],\n];\n\nfunction table(rows){\n  return `<table>${rows.map(([k,v]) => `<tr><th>${esc(k)}</th><td>${esc(v)}</td></tr>`).join('')}</table>`;\n}\n\nconst html = `<!doctype html>\n<html lang=\"de\"><head><meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n<title>Forstauftrag</title>\n<style>\n  :root{\n    --brand:#0f172a; --muted:#667085; --line:#e5e7eb;\n    --sec-a:#e3f2fd; --sec-b:#e8f5e9; --sec-c:#fff3e0; --sec-d:#f3e8ff;\n    --sec-a-h:#1565c0; --sec-b-h:#2e7d32; --sec-c-h:#ef6c00; --sec-d-h:#6a1b9a;\n  }\n  *{box-sizing:border-box} body{margin:0;background:#fff;color:#111;font:14px/1.5 system-ui,Segoe UI,Roboto}\n  .sheet{max-width:900px;margin:0 auto;padding:28px 28px 60px}\n  .head{display:flex;gap:16px;align-items:flex-start;border-bottom:2px solid var(--brand);padding-bottom:12px;margin-bottom:16px}\n  .brand{flex:1}\n  .brand .title{font-weight:800;font-size:22px;letter-spacing:.3px;color:var(--brand)}\n  .brand .meta{color:var(--muted);font-size:12px;margin-top:4px}\n  .logo{min-width:160px;text-align:right}\n  .logo img{max-height:40px;max-width:160px;object-fit:contain}\n  .cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:10px 0 16px}\n  .card{border:1px solid var(--line);border-radius:10px;padding:12px}\n  .card h3{margin:0 0 6px;font-size:13px;text-transform:uppercase;letter-spacing:.4px;color:#334155}\n  .sec{margin-top:14px}\n  .sec h2{margin:0 0 8px;font-size:14px;font-weight:800;letter-spacing:.3px}\n  .sec-a h2{color:var(--sec-a-h)} .sec-b h2{color:var(--sec-b-h)} .sec-c h2{color:var(--sec-c-h)} .sec-d h2{color:var(--sec-d-h)}\n  table{width:100%;border-collapse:separate;border-spacing:0;border:1px solid var(--line);border-radius:12px;overflow:hidden}\n  th,td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}\n  th{width:36%;background:#f8fafb;text-align:left;font-weight:700;color:#111}\n  tr:nth-child(even) td{background:#fcfdff}\n  tr:last-child th,tr:last-child td{border-bottom:0}\n  .foot-fixed{position:fixed;left:0;right:0;bottom:0;border-top:1px solid var(--line);padding:8px 28px;color:#475569;font-size:12px;display:flex;justify-content:space-between;align-items:center;background:#fff}\n</style></head>\n<body>\n  <div class=\"sheet\">\n    <div class=\"head\">\n      <div class=\"brand\">\n        <div class=\"title\">Forstauftrag</div>\n        <div class=\"meta\">Erstellt: ${esc(now)}</div>\n      </div>\n      <div class=\"logo\">${logoUrl ? `<img src=\"${esc(logoUrl)}\" alt=\"Logo\">` : ''}</div>\n    </div>\n\n    <div class=\"cards\">\n      <div class=\"card\"><h3>Wetter</h3><div>${esc(weather)}</div></div>\n      <div class=\"card\"><h3>Nächster Rettungspunkt</h3><div>${\n        hasCoords\n          ? (rp ? `RP ${esc(rp.rp_nr || rp.rp || '')} • ${esc(rp.beschreibung || '')} • ${esc(rp.entfernung_m || rp.entfernung || '')} m` : '–')\n          : 'keine Koordinaten'\n      }</div></div>\n    </div>\n\n    <div class=\"sec sec-a\"><h2>Allgemeine Angaben</h2>${table(secAllg)}</div>\n    <div class=\"sec sec-b\"><h2>Sicherheit</h2>${table(secSich)}</div>\n    <div class=\"sec sec-c\"><h2>Maschinen & Maßnahmen</h2>${table(secMasch)}</div>\n    <div class=\"sec sec-d\"><h2>Standort & Bedingungen</h2>${table(secLoc)}</div>\n  </div>\n</body></html>`;\n\nconst footerTemplate = `\n  <style>\n    .f{font-family:system-ui,Segoe UI,Roboto;font-size:10px;color:#475569;display:flex;justify-content:space-between;width:100%;padding:0 12px}\n    .bar{height:2px;background:#0ea5e9;margin-bottom:6px}\n  </style>\n  <div class=\"bar\"></div>\n  <div class=\"f\"><div>${esc(companyName)}</div><div>Seite {{pageNumber}} / {{totalPages}}</div></div>\n`;\n\nreturn { ...d, html, footerTemplate };\n"
-      }
+      "id": "040e6893-cc64-4029-b30b-09a25bcbe48a",
+      "name": "Code1"
     },
     {
-      "id": "c74b0657-8240-4b4f-93be-e2ef56e7e9ff",
-      "name": "Convert to File",
-      "type": "n8n-nodes-base.moveBinaryData",
-      "typeVersion": 2,
-      "position": [
-        -20,
-        -40
-      ],
       "parameters": {
-        "mode": "jsonToBinary",
-        "dataPropertyName": "html",
-        "binaryPropertyName": "files",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Verkehrsrechtliche Anordnung/Einsatz an Straße",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "ja"
+                  },
+                  {
+                    "option": "nein"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Absperrung",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "keine"
+                  },
+                  {
+                    "option": "ja - Vollsperrung mit Schilder und Absperrband"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Posten - wie viele Helfer? ",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "0 - keine notwendig"
+                  },
+                  {
+                    "option": "1"
+                  },
+                  {
+                    "option": "2"
+                  },
+                  {
+                    "option": "3"
+                  },
+                  {
+                    "option": "4"
+                  },
+                  {
+                    "option": "5"
+                  },
+                  {
+                    "option": "mehr als 5 "
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Persönliche Schutzausrüstung geprüft/getragen? ",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "ja"
+                  },
+                  {
+                    "option": "nein"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Bemerkungen zu Schutzausrüstung: ",
+              "fieldType": "textarea",
+              "placeholder": "Besonderheiten bei Schutzausrüstung, falls vorhanden. "
+            },
+            {
+              "fieldLabel": "Zufahrt für Maschinen möglich? ",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "ja"
+                  },
+                  {
+                    "option": "nein"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Maschintyp",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Harvester"
+                  },
+                  {
+                    "option": "Forwarder"
+                  },
+                  {
+                    "option": "(Seil-)Schlepper/Traktor"
+                  },
+                  {
+                    "option": "Lkw"
+                  },
+                  {
+                    "option": "Bagger"
+                  },
+                  {
+                    "option": "sonstige Maschinen"
+                  }
+                ]
+              },
+              "multiselect": true
+            },
+            {
+              "fieldLabel": "Maschinenbediener: ",
+              "placeholder": "Fahrer 1, Fahrer 2, Fahrer3, .... "
+            },
+            {
+              "fieldLabel": "Besondere Gefährdungen:",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "=Witterung/Nässe"
+                  },
+                  {
+                    "option": "Boden nicht tragfähig"
+                  },
+                  {
+                    "option": "Absturzgefahr "
+                  },
+                  {
+                    "option": "Von Personen frequentiert/Spaziergänger"
+                  },
+                  {
+                    "option": "Schlechte Sicht "
+                  },
+                  {
+                    "option": "Böschungslage"
+                  },
+                  {
+                    "option": "Verkehrswege"
+                  },
+                  {
+                    "option": "Störender Bewuchs"
+                  },
+                  {
+                    "option": "Wind"
+                  },
+                  {
+                    "option": "Elektrische Freileitungen"
+                  },
+                  {
+                    "option": "Gewässerrandlage"
+                  },
+                  {
+                    "option": "Gefahrstoffe"
+                  }
+                ]
+              },
+              "multiselect": true
+            },
+            {
+              "fieldLabel": "Maßnahmen bei besonderer Gefährdung eingeleitet?",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "ja"
+                  },
+                  {
+                    "option": "nein"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Im Trupp/Arbeitsgruppe  unterwiesen?",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "ja"
+                  },
+                  {
+                    "option": "nein"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Zustimmung:",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Ich bestätige die Richtigkeit meiner Angaben und bin mit der Verarbeitung einverstanden."
+                  }
+                ]
+              },
+              "multiselect": true,
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Standortdaten - latitude (erster Wert in GoogleMaps)",
+              "fieldType": "number",
+              "placeholder": "48.098726",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Standortdaten - longitude (zweiter Wert in GoogleMaps)",
+              "fieldType": "number",
+              "placeholder": "11.974201 ",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "jo",
+              "fieldType": "file",
+              "multipleFiles": false
+            }
+          ]
+        },
         "options": {
-          "fileName": "index.html",
-          "mimeType": "text/html",
-          "encoding": "utf8"
+          "buttonLabel": "weiter"
+        }
+      },
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 1,
+      "position": [
+        -5264,
+        1040
+      ],
+      "id": "667df0cf-4515-4480-b2d2-6fe32ef8e442",
+      "name": "Form1",
+      "webhookId": "c9f15e3c-026b-49f5-99a1-2dfa3b8853e9"
+    },
+    {
+      "parameters": {
+        "formTitle": "Neuer Arbeitsauftrag",
+        "formDescription": "Geben Sie wichtige Angaben zu Ihrem Arbeitsauftrag an. ",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Datum Arbeitstag: ",
+              "fieldType": "date",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Einsatzort",
+              "placeholder": "wo arbeiten Sie gerade?",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Arbeitsverantwortlicher",
+              "placeholder": "Wer führt die Arbeit durch? ",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "weitere Einsatzkräfte:",
+              "placeholder": "wer arbeitet noch mit Ihnen? "
+            },
+            {
+              "fieldLabel": "Ansprechpartner Kunde: ",
+              "placeholder": "Waldbesitzer",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Kunde Telefon: ",
+              "fieldType": "number",
+              "placeholder": "Telefonnummer"
+            },
+            {
+              "fieldLabel": "Ersthelfer vor Ort: ",
+              "placeholder": "Wer leistet erste Hilfe bei Unfällen? "
+            },
+            {
+              "fieldName": "Rettungspunkt",
+              "fieldType": "hiddenField"
+            },
+            {
+              "fieldName": "Witterung",
+              "fieldType": "hiddenField"
+            }
+          ]
+        },
+        "options": {
+          "buttonLabel": "weiter",
+          "customCss": ":root {\n\t--font-family: 'Open Sans', sans-serif;\n\t--font-weight-normal: 400;\n\t--font-weight-bold: 600;\n\t--font-size-body: 12px;\n\t--font-size-label: 14px;\n\t--font-size-test-notice: 12px;\n\t--font-size-input: 14px;\n\t--font-size-header: 20px;\n\t--font-size-paragraph: 14px;\n\t--font-size-link: 12px;\n\t--font-size-error: 12px;\n\t--font-size-html-h1: 28px;\n\t--font-size-html-h2: 20px;\n\t--font-size-html-h3: 16px;\n\t--font-size-html-h4: 14px;\n\t--font-size-html-h5: 12px;\n\t--font-size-html-h6: 10px;\n\t--font-size-subheader: 14px;\n\n\t/* Colors */\n\t--color-background: #fbfcfe;\n\t--color-test-notice-text: #e6a23d;\n\t--color-test-notice-bg: #fefaf6;\n\t--color-test-notice-border: #f6dcb7;\n\t--color-card-bg: #ffffff;\n\t--color-card-border: #dbdfe7;\n\t--color-card-shadow: rgba(99, 77, 255, 0.06);\n\t--color-link: #7e8186;\n\t--color-header: #525356;\n\t--color-label: #555555;\n\t--color-input-border: #dbdfe7;\n\t--color-input-text: #71747A;\n\t--color-focus-border: rgb(90, 76, 194);\n\t--color-submit-btn-bg: #ff6d5a;\n\t--color-submit-btn-text: #ffffff;\n\t--color-error: #ea1f30;\n\t--color-required: #ff6d5a;\n\t--color-clear-button-bg: #7e8186;\n\t--color-html-text: #555;\n\t--color-html-link: #ff6d5a;\n\t--color-header-subtext: #7e8186;\n\n\t/* Border Radii */\n\t--border-radius-card: 8px;\n\t--border-radius-input: 6px;\n\t--border-radius-clear-btn: 50%;\n\t--card-border-radius: 8px;\n\n\t/* Spacing */\n\t--padding-container-top: 24px;\n\t--padding-card: 24px;\n\t--padding-test-notice-vertical: 12px;\n\t--padding-test-notice-horizontal: 24px;\n\t--margin-bottom-card: 16px;\n\t--padding-form-input: 12px;\n\t--card-padding: 24px;\n\t--card-margin-bottom: 16px;\n\n\t/* Dimensions */\n\t--container-width: 448px;\n\t--submit-btn-height: 48px;\n\t--checkbox-size: 18px;\n\n\t/* Others */\n\t--box-shadow-card: 0px 4px 16px 0px var(--color-card-shadow);\n\t--opacity-placeholder: 0.5;\n}"
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        -5488,
+        1040
+      ],
+      "id": "a7d795c3-03de-46a4-84c3-2e2344e68739",
+      "name": "On form submission1",
+      "webhookId": "2d6de1b5-94ca-48a0-910d-4732073b32da"
+    },
+    {
+      "parameters": {
+        "operation": "completion",
+        "completionTitle": "Eingabe abgeschlossen. ",
+        "completionMessage": "Danke für die Übertragung, ihre Eingaben wurden erfolgreich versendet. \nWir wünschen eine gute und sichere Arbeit! ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 1,
+      "position": [
+        -5040,
+        1040
+      ],
+      "id": "48f857c3-f744-4d19-a9e5-1aa36e59940d",
+      "name": "Form3",
+      "webhookId": "435006ea-b74b-4078-917f-57ef18d9a85d"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "rettungspunkte",
+        "returnAll": true,
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "wgs_breite",
+              "condition": "gte",
+              "keyValue": "={{ $json['Standortdaten - latitude (erster Wert in GoogleMaps)'] - 0.1 }}"
+            },
+            {
+              "keyName": "wgs_breite",
+              "condition": "lte",
+              "keyValue": "={{ $json['Standortdaten - latitude (erster Wert in GoogleMaps)'] + 0.1 }}"
+            },
+            {
+              "keyName": "wgs_laenge",
+              "condition": "lte",
+              "keyValue": "={{ $json['Standortdaten - longitude (zweiter Wert in GoogleMaps)'] + 0.1 }}"
+            },
+            {
+              "keyName": "wgs_laenge",
+              "condition": "gte",
+              "keyValue": "={{ $json['Standortdaten - longitude (zweiter Wert in GoogleMaps)'] - 0.1 }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -4816,
+        1184
+      ],
+      "id": "d4ac98fa-f421-4b53-aaa2-c965f0cb44fe",
+      "name": "Get many rows1",
+      "credentials": {
+        "supabaseApi": {
+          "id": "cyNSejswiPuBy0Mv",
+          "name": "Rettungspunkte(Supabase)"
         }
       }
     },
     {
-      "id": "24d4809b-105c-4bbe-a815-154df7b10a27",
-      "name": "HTML → PDF (Gotenberg)",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 5,
-      "position": [
-        240,
-        -40
-      ],
       "parameters": {
-        "url": "https://<YOUR-CLOUD-RUN-GOTENBERG>/forms/chromium/convert/html",
-        "method": "POST",
-        "sendBody": true,
-        "responseFormat": "file",
-        "options": {
-          "timeout": 600000
+        "jsCode": "const latitude = parseFloat($('Form3').first().json['Standortdaten - latitude (erster Wert in GoogleMaps)']);\nconst longitude = parseFloat($('Form3').first().json['Standortdaten - longitude (zweiter Wert in GoogleMaps)']);\nconst rettungspunkte = $items();\n\nfunction distance(lat1, lon1, lat2, lon2) {\n  const R = 6371e3;\n  const toRad = deg => deg * (Math.PI / 180);\n  const dLat = toRad(lat2 - lat1);\n  const dLon = toRad(lon2 - lon1);\n  const a = Math.sin(dLat / 2) ** 2 +\n            Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *\n            Math.sin(dLon / 2) ** 2;\n  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));\n  return R * c;\n}\n\nconst distanzArray = rettungspunkte.map(punkt => {\n  const dist = distance(latitude, longitude, punkt.json.wgs_breite, punkt.json.wgs_laenge);\n  return {\n    rp_nr: punkt.json.rp_nr,\n    entfernung_m: Math.round(dist),\n    lat: punkt.json.wgs_breite,\n    lon: punkt.json.wgs_laenge,\n    id: punkt.json.id,\n    beschreibung: punkt.json.beschreibung,\n    bundesland: punkt.json.bundesland\n  };\n});\n\nconst top3 = distanzArray.sort((a, b) => a.entfernung_m - b.entfernung_m).slice(0, 3);\n\nreturn [\n  {\n    json: {\n      gps_ursprung: { latitude, longitude },\n      top_3_rettungspunkte: top3\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4592,
+        1184
+      ],
+      "id": "5aad2e68-a279-4bee-832c-03414a21ff88",
+      "name": "Code2"
+    },
+    {
+      "parameters": {
+        "locationSelection": "coordinates",
+        "latitude": "={{ $('Form1').item.json['Standortdaten - latitude (erster Wert in GoogleMaps)'] }}",
+        "longitude": "={{ $('Form1').item.json['Standortdaten - longitude (zweiter Wert in GoogleMaps)'] }}",
+        "language": "de"
+      },
+      "type": "n8n-nodes-base.openWeatherMap",
+      "typeVersion": 1,
+      "position": [
+        -4592,
+        880
+      ],
+      "id": "22d8a080-96ff-42e9-9350-dd3f0271a097",
+      "name": "OpenWeatherMap1",
+      "credentials": {
+        "openWeatherMapApi": {
+          "id": "CWbJ42ss1QeH9GUK",
+          "name": "OpenWeatherMap account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4031edef-83ba-46c3-bee0-c60f17ee4aee",
+              "name": "Verkehrsrechtliche Anordnung/Einsatz an Straße",
+              "value": "={{ $('Form3').all()[0].json['Verkehrsrechtliche Anordnung/Einsatz an Straße'] }}",
+              "type": "string"
+            },
+            {
+              "id": "9e32a4ba-0e81-4e99-941f-999659516d75",
+              "name": "Absperrung",
+              "value": "={{ $('Form3').all()[0].json.Absperrung }}",
+              "type": "string"
+            },
+            {
+              "id": "d0100061-8e8b-4fb5-b91e-10fdf1cce157",
+              "name": "Posten - wie viele Helfer? ",
+              "value": "={{ $('Form3').all()[0].json['Posten - wie viele Helfer? '] }}",
+              "type": "string"
+            },
+            {
+              "id": "8ed5a208-cce9-4a4f-90bd-e90989c705aa",
+              "name": "Persönliche Schutzausrüstung geprüft/getragen? ",
+              "value": "={{ $('Form3').all()[0].json['Persönliche Schutzausrüstung geprüft/getragen? '] }}",
+              "type": "string"
+            },
+            {
+              "id": "d8e06d80-dda5-4ab9-af50-0402d1aa511e",
+              "name": "Bemerkungen zu Schutzausrüstung: ",
+              "value": "={{ $('Form3').all()[0].json['Bemerkungen zu Schutzausrüstung: '] }}",
+              "type": "string"
+            },
+            {
+              "id": "cd14b4e2-a4e3-4065-8038-c0f8c6b7d0b9",
+              "name": "Zufahrt für Maschinen möglich? ",
+              "value": "={{ $('Form3').all()[0].json['Zufahrt für Maschinen möglich? '] }}",
+              "type": "string"
+            },
+            {
+              "id": "9561f2d5-561b-468a-8ac4-acc225dd3569",
+              "name": "Maschintyp[0]",
+              "value": "={{ $('Form3').all()[0].json.Maschintyp[0] }}",
+              "type": "string"
+            },
+            {
+              "id": "074d8779-b41a-47b0-9640-d40b22defda4",
+              "name": "Maschinenbediener: ",
+              "value": "={{ $('Form3').all()[0].json['Maschinenbediener: '] }}",
+              "type": "string"
+            },
+            {
+              "id": "7fe57e3d-4068-4e64-b7d9-182b1adaf9f0",
+              "name": "Besondere Gefährdungen:",
+              "value": "={{ $('Form3').all()[0].json['Besondere Gefährdungen:'] }}",
+              "type": "array"
+            },
+            {
+              "id": "f5b31785-b00e-485a-b434-8c3dcd54611d",
+              "name": "['Besondere Gefährdungen:'][0]",
+              "value": "={{ $('Form3').all()[0].json['Besondere Gefährdungen:'][0] }}",
+              "type": "string"
+            },
+            {
+              "id": "3eef2192-3973-4afa-b632-0c791e004cb7",
+              "name": "['Besondere Gefährdungen:'][1]",
+              "value": "={{ $('Form3').all()[0].json['Besondere Gefährdungen:'][1] }}",
+              "type": "string"
+            },
+            {
+              "id": "845b76e1-0efb-47ca-ae1e-d6f33efa326c",
+              "name": "Maßnahmen bei besonderer Gefährdung eingeleitet?",
+              "value": "={{ $('Form3').all()[0].json['Maßnahmen bei besonderer Gefährdung eingeleitet?'] }}",
+              "type": "string"
+            },
+            {
+              "id": "45d36278-1f9f-486d-af20-56144d13d775",
+              "name": "Im Trupp/Arbeitsgruppe  unterwiesen?",
+              "value": "={{ $('Form3').all()[0].json['Im Trupp/Arbeitsgruppe  unterwiesen?'] }}",
+              "type": "string"
+            },
+            {
+              "id": "98e0d690-ebe2-4679-a7c3-a42b22873abf",
+              "name": "Zustimmung:",
+              "value": "={{ $('Form3').all()[0].json['Zustimmung:'] }}",
+              "type": "array"
+            },
+            {
+              "id": "92852a13-44f7-4b00-ab26-94da604fb732",
+              "name": "['Zustimmung:'][0]",
+              "value": "={{ $('Form3').all()[0].json['Zustimmung:'][0] }}",
+              "type": "string"
+            },
+            {
+              "id": "701fec5a-3caa-49da-9e79-3225f249fe9b",
+              "name": "submittedAt",
+              "value": "={{ $('Form3').all()[0].json.submittedAt }}",
+              "type": "string"
+            },
+            {
+              "id": "bfa382ea-6346-431d-a6a1-97f7f335b6d1",
+              "name": "weather[0].description",
+              "value": "={{ $json.weather[0].description }}",
+              "type": "string"
+            },
+            {
+              "id": "b4afd103-33fe-4b61-be11-68555730e3e7",
+              "name": "main.temp",
+              "value": "={{ $json.main.temp }}",
+              "type": "number"
+            },
+            {
+              "id": "19ffe73f-1a79-43cd-9582-ffb6ce466f34",
+              "name": "main.pressure",
+              "value": "={{ $json.main.pressure }}",
+              "type": "number"
+            },
+            {
+              "id": "70eb1176-6e6a-4e57-8b10-59df18670564",
+              "name": "wind.speed",
+              "value": "={{ $json.wind.speed }}",
+              "type": "number"
+            },
+            {
+              "id": "4c7f7b00-2de7-4eb1-9eaa-7fdfcb6707af",
+              "name": "clouds.all",
+              "value": "={{ $json.clouds.all }}",
+              "type": "number"
+            },
+            {
+              "id": "675275f6-8b38-4559-8925-1f0a7392a49d",
+              "name": "top_3_rettungspunkte",
+              "value": "={{ $json.top_3_rettungspunkte }}",
+              "type": "string"
+            },
+            {
+              "id": "7c6789e1-554a-4850-bf05-192458c0705a",
+              "name": "top_3_rettungspunkte[0]",
+              "value": "={{ $json.top_3_rettungspunkte[0] }}",
+              "type": "string"
+            },
+            {
+              "id": "80ea20fb-634a-45f1-8ab1-b232d7ed8980",
+              "name": "top_3_rettungspunkte[0].rp_nr",
+              "value": "={{ $json.top_3_rettungspunkte[0].rp_nr }}",
+              "type": "string"
+            },
+            {
+              "id": "5a259db8-e81f-4ea0-84e3-28c9bc3dbdd2",
+              "name": "top_3_rettungspunkte[0].entfernung_m",
+              "value": "={{ $json.top_3_rettungspunkte[0].entfernung_m }}",
+              "type": "string"
+            },
+            {
+              "id": "5f055c64-4ae7-44ff-aa58-af4543074f6e",
+              "name": "top_3_rettungspunkte[0].beschreibung",
+              "value": "={{ $json.top_3_rettungspunkte[0].beschreibung }}",
+              "type": "string"
+            },
+            {
+              "id": "df1c0ebf-bbc1-4fe0-bbf6-9241b8bf8a80",
+              "name": "top_3_rettungspunkte[0].bundesland",
+              "value": "={{ $json.top_3_rettungspunkte[0].bundesland }}",
+              "type": "string"
+            }
+          ]
         },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3920,
+        960
+      ],
+      "id": "8dd148d6-70a5-4993-9a9b-ccf6a5bf0b7a",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "mode": "mergeByIndex"
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 1,
+      "position": [
+        -4336,
+        832
+      ],
+      "id": "e3ebe587-5475-4a18-89ab-3aeb22f57676",
+      "name": "Merge Weather + RP1"
+    },
+    {
+      "parameters": {
+        "mode": "mergeByIndex"
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 1,
+      "position": [
+        -4144,
+        960
+      ],
+      "id": "e7af5fbf-aab9-410f-bca2-c5f86b2793a1",
+      "name": "Merge All1"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Build a clean, modern HTML using the merged data.\n// We render a header, metadata section, and a key/value table of all fields.\nconst data = item.json;\nconst now = new Date().toLocaleString('de-DE');\n\n// Helper to escape HTML\nconst esc = (s) => String(s)\n  .replace(/&/g,'&amp;').replace(/</g,'&lt;')\n  .replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/'/g,'&#39;');\n\n// Flatten data (1 level) for table rows\nconst flatten = (obj, prefix = '') => {\n  const rows = [];\n  for (const [k, v] of Object.entries(obj || {})) {\n    const key = prefix ? `${prefix}.${k}` : k;\n    if (v === null || v === undefined) continue;\n    if (typeof v === 'object' && !Array.isArray(v)) {\n      // stringify shallow objects to keep PDF compact\n      rows.push([key, esc(JSON.stringify(v))]);\n    } else {\n      rows.push([key, esc(v)]);\n    }\n  }\n  return rows;\n};\n\nconst rows = flatten(data);\n\nconst html = `<!doctype html>\n<html lang=\"de\">\n<head>\n  <meta charset=\"utf-8\" />\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n  <title>Forstauftrag</title>\n  <style>\n    :root {\n      --bg: #0b0f17;\n      --card: #141a24;\n      --muted: #9fb1c9;\n      --text: #e6edf3;\n      --accent: #4f8cff;\n      --accent-2: #22c55e;\n      --border: #243044;\n    }\n    * { box-sizing: border-box; }\n    body {\n      margin: 0; padding: 32px;\n      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial;\n      background: #fff; color: #111;\n    }\n    .sheet {\n      max-width: 900px; margin: 0 auto; background: #fff;\n    }\n    .header {\n      display: flex; align-items: center; justify-content: space-between;\n      border-bottom: 2px solid #111; padding-bottom: 16px; margin-bottom: 20px;\n    }\n    .brand { font-size: 22px; font-weight: 700; letter-spacing: .3px; }\n    .meta {\n      font-size: 12px; color: #333; text-align: right;\n    }\n    .badges { display: flex; gap: 8px; margin: 4px 0 0; }\n    .badge {\n      font-size: 10px; text-transform: uppercase; letter-spacing: .5px;\n      border: 1px solid #111; padding: 2px 6px; border-radius: 999px;\n    }\n    h2 {\n      font-size: 18px; margin: 24px 0 8px;\n      padding: 0;\n    }\n    .kv {\n      width: 100%; border-collapse: separate; border-spacing: 0;\n      border: 1px solid #111; border-radius: 12px; overflow: hidden;\n    }\n    .kv th, .kv td {\n      padding: 10px 12px; vertical-align: top;\n      border-bottom: 1px solid #1111; \n    }\n    .kv tr:last-child th, .kv tr:last-child td { border-bottom: 0; }\n    .kv th {\n      width: 32%; background: #f6f7f9; text-align: left; font-weight: 600;\n    }\n    .footer {\n      margin-top: 28px; font-size: 11px; color: #444;\n      display: flex; justify-content: space-between; align-items: center;\n    }\n    .sign { border-top: 1px solid #111; width: 240px; height: 42px; }\n    .muted { color: #666; }\n  </style>\n</head>\n<body>\n  <div class=\"sheet\">\n    <div class=\"header\">\n      <div class=\"brand\">Forstauftrag</div>\n      <div class=\"meta\">\n        <div>Erstellt: ${esc(now)}</div>\n        <div class=\"badges\">\n          <div class=\"badge\">Automatisiert</div>\n          <div class=\"badge\">n8n</div>\n        </div>\n      </div>\n    </div>\n\n    <h2>Angaben</h2>\n    <table class=\"kv\">\n      ${rows.map(([k,v]) => `<tr><th>${esc(k)}</th><td>${v}</td></tr>`).join('')}\n    </table>\n\n    <div class=\"footer\">\n      <div class=\"muted\">Generiert durch n8n • Keine Unterschrift erforderlich</div>\n      <div class=\"sign\"></div>\n    </div>\n  </div>\n</body>\n</html>`;\n\nreturn { ...item.json, html };"
+      },
+      "type": "n8n-nodes-base.functionItem",
+      "typeVersion": 1,
+      "position": [
+        -3696,
+        1056
+      ],
+      "id": "442affc2-0e1c-4200-b109-85eb4422c068",
+      "name": "HTML1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://gotenberg-liwwwqwh3q-ey.a.run.app/forms/chromium/convert/html",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
         "bodyParameters": {
           "parameters": [
             {
               "parameterType": "formBinaryData",
               "name": "files",
               "inputDataFieldName": "files"
-            },
-            {
-              "parameterType": "formData",
-              "name": "paperWidth",
-              "value": "210mm"
-            },
-            {
-              "parameterType": "formData",
-              "name": "paperHeight",
-              "value": "297mm"
-            },
-            {
-              "parameterType": "formData",
-              "name": "marginTop",
-              "value": "16mm"
-            },
-            {
-              "parameterType": "formData",
-              "name": "marginBottom",
-              "value": "16mm"
-            },
-            {
-              "parameterType": "formData",
-              "name": "marginLeft",
-              "value": "10mm"
-            },
-            {
-              "parameterType": "formData",
-              "name": "marginRight",
-              "value": "10mm"
-            },
-            {
-              "parameterType": "formData",
-              "name": "footerTemplate",
-              "value": "={{$json.footerTemplate}}"
             }
           ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          },
+          "timeout": 600000
         }
-      }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -3264,
+        960
+      ],
+      "id": "1756b691-842b-41d5-80ee-54735931145f",
+      "name": "HTML → PDF (Gotenberg)1"
     },
     {
-      "id": "b3c66d07-0f98-4338-baef-d8206fb0e1cf",
-      "name": "Code (PDF meta)",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        500,
-        -40
-      ],
       "parameters": {
-        "language": "JavaScript",
-        "jsCode": "const ts=new Date().toISOString().slice(0,10);\nif (item.binary?.data) { item.binary.data.fileName=`Forstauftrag_${ts}.pdf`; item.binary.data.mimeType='application/pdf'; item.binary.data.fileExtension='pdf'; }\nreturn item;"
-      }
-    },
-    {
-      "id": "51487cb0-eae0-4c8e-9d02-17a3b2d5dfd4",
-      "name": "Send a message",
-      "type": "n8n-nodes-base.gmail",
-      "typeVersion": 3,
-      "position": [
-        760,
-        -40
-      ],
-      "parameters": {
-        "resource": "message",
-        "operation": "send",
-        "toList": [
-          "rusmir.omerovic@web.de"
-        ],
-        "subject": "Forstauftrag – PDF-Bestätigung",
+        "sendTo": "rusmir.omerovic@web.de",
+        "subject": "Forstauftrag - Bestätigung PDF",
         "message": "Im Anhang findest du das automatisch erzeugte PDF zum Forstauftrag.",
         "options": {
           "attachmentsUi": {
             "attachmentsBinary": [
-              {
-                "binaryPropertyName": "data"
-              }
+              {}
             ]
           }
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [
+        -2832,
+        960
+      ],
+      "id": "acd5bec8-e673-4f03-8ae7-77e93fdc6c9e",
+      "name": "Send a message1",
+      "webhookId": "9e016e9a-d8de-45cc-80a9-cbcef0019843",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "r9L6sNQuvKW3wsFJ",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1B56Kah2t7Dz84usjQfQNnefK3R2rgQGO0H2hRndCtzc",
+          "mode": "list",
+          "cachedResultName": "auftragsdaten",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1B56Kah2t7Dz84usjQfQNnefK3R2rgQGO0H2hRndCtzc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Tabellenblatt1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1B56Kah2t7Dz84usjQfQNnefK3R2rgQGO0H2hRndCtzc/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Datum Arbeitstag",
+              "displayName": "Datum Arbeitstag",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Einsatzort",
+              "displayName": "Einsatzort",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Arbeitsverantwortlicher",
+              "displayName": "Arbeitsverantwortlicher",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Weitere Einsatzkräfte",
+              "displayName": "Weitere Einsatzkräfte",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Ansprechpartner Kunde",
+              "displayName": "Ansprechpartner Kunde",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Kunde Telefon",
+              "displayName": "Kunde Telefon",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Ersthelfer",
+              "displayName": "Ersthelfer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Verkehrsrechtliche Anordnung",
+              "displayName": "Verkehrsrechtliche Anordnung",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Absperrung",
+              "displayName": "Absperrung",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Helferanzahl",
+              "displayName": "Helferanzahl",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "PSA getragen",
+              "displayName": "PSA getragen",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Bemerkungen PSA",
+              "displayName": "Bemerkungen PSA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Zufahrt möglich",
+              "displayName": "Zufahrt möglich",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Maschinentyp",
+              "displayName": "Maschinentyp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Maschinenbediener",
+              "displayName": "Maschinenbediener",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Besondere Gefährdungen",
+              "displayName": "Besondere Gefährdungen",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Maßnahmen bei Gefährdungen",
+              "displayName": "Maßnahmen bei Gefährdungen",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Unterweisung",
+              "displayName": "Unterweisung",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Zustimmung",
+              "displayName": "Zustimmung",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Latitude",
+              "displayName": "Latitude",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Longitude",
+              "displayName": "Longitude",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Wetter Beschreibung",
+              "displayName": "Wetter Beschreibung",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Temperatur",
+              "displayName": "Temperatur",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Druck",
+              "displayName": "Druck",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Windgeschw.",
+              "displayName": "Windgeschw.",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Bewölkung",
+              "displayName": "Bewölkung",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Rettungspunkt Nr.",
+              "displayName": "Rettungspunkt Nr.",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Entferung (m)",
+              "displayName": "Entferung (m)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Beschreibung RP",
+              "displayName": "Beschreibung RP",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Bundesland RP",
+              "displayName": "Bundesland RP",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Submitted At",
+              "displayName": "Submitted At",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -3680,
+        784
+      ],
+      "id": "e5b9b240-09ee-493d-ae47-c6633661feb3",
+      "name": "Append row in sheet",
+      "alwaysOutputData": false,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "awTBm5n9jFsyxPvL",
+          "name": "Google Sheets rusmir-projects"
         }
       }
     }
   ],
+  "pinData": {
+    "On form submission1": [
+      {
+        "json": {
+          "Datum Arbeitstag: ": "2025-06-22",
+          "Einsatzort": "Ebersberg",
+          "Arbeitsverantwortlicher": "Rusmir",
+          "weitere Einsatzkräfte:": "keiner",
+          "Ansprechpartner Kunde: ": "Fritz Holzer",
+          "Kunde Telefon: ": 0,
+          "Ersthelfer vor Ort: ": "Rusmir",
+          "Rettungspunkt": "",
+          "Witterung": "",
+          "submittedAt": "2025-06-22T20:56:04.410+02:00",
+          "formMode": "test"
+        }
+      }
+    ],
+    "Form1": [
+      {
+        "json": {
+          "Verkehrsrechtliche Anordnung/Einsatz an Straße": "nein",
+          "Absperrung": "keine",
+          "Posten - wie viele Helfer? ": "0 - keine notwendig",
+          "Persönliche Schutzausrüstung geprüft/getragen? ": "ja",
+          "Bemerkungen zu Schutzausrüstung: ": "",
+          "Zufahrt für Maschinen möglich? ": "ja",
+          "Maschintyp": [
+            "Harvester"
+          ],
+          "Maschinenbediener: ": "Rusmir",
+          "Besondere Gefährdungen:": [
+            "Schlechte Sicht",
+            "Wind"
+          ],
+          "Maßnahmen bei besonderer Gefährdung eingeleitet?": "ja",
+          "Im Trupp/Arbeitsgruppe  unterwiesen?": "nein",
+          "Zustimmung:": [
+            "Ich bestätige die Richtigkeit meiner Angaben und bin mit der Verarbeitung einverstanden."
+          ],
+          "Standortdaten - latitude (erster Wert in GoogleMaps)": 48.106048,
+          "Standortdaten - longitude (zweiter Wert in GoogleMaps)": 11.945097,
+          "jo": null,
+          "submittedAt": "2025-07-03T14:58:45.805+02:00",
+          "formMode": "test"
+        }
+      }
+    ],
+    "Form3": [
+      {
+        "json": {
+          "Verkehrsrechtliche Anordnung/Einsatz an Straße": "nein",
+          "Absperrung": "keine",
+          "Posten - wie viele Helfer? ": "0 - keine notwendig",
+          "Persönliche Schutzausrüstung geprüft/getragen? ": "ja",
+          "Bemerkungen zu Schutzausrüstung: ": "",
+          "Zufahrt für Maschinen möglich? ": "ja",
+          "Maschintyp": [
+            "Harvester"
+          ],
+          "Maschinenbediener: ": "Rusmir",
+          "Besondere Gefährdungen:": [
+            "Schlechte Sicht",
+            "Wind"
+          ],
+          "Maßnahmen bei besonderer Gefährdung eingeleitet?": "ja",
+          "Im Trupp/Arbeitsgruppe  unterwiesen?": "nein",
+          "Zustimmung:": [
+            "Ich bestätige die Richtigkeit meiner Angaben und bin mit der Verarbeitung einverstanden."
+          ],
+          "Standortdaten - latitude (erster Wert in GoogleMaps)": 48.106048,
+          "Standortdaten - longitude (zweiter Wert in GoogleMaps)": 11.945097,
+          "jo": null,
+          "submittedAt": "2025-07-03T14:58:45.805+02:00",
+          "formMode": "test"
+        }
+      }
+    ]
+  },
   "connections": {
-    "eab35488-75ed-4bf3-b605-97dc64df6b55": {
+    "Code1": {
       "main": [
         [
           {
-            "node": "49b38fd5-ae69-4783-83cf-ac967b226d93",
+            "node": "Send a message1",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "49b38fd5-ae69-4783-83cf-ac967b226d93": {
+    "Move Binary Data (HTML file)": {
       "main": [
         [
           {
-            "node": "a5bd1527-9087-48d0-9d78-0dcdad31af4b",
+            "node": "HTML → PDF (Gotenberg)1",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "a5bd1527-9087-48d0-9d78-0dcdad31af4b": {
+    "Form1": {
       "main": [
         [
           {
-            "node": "c74b0657-8240-4b4f-93be-e2ef56e7e9ff",
+            "node": "Form3",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "c74b0657-8240-4b4f-93be-e2ef56e7e9ff": {
+    "On form submission1": {
       "main": [
         [
           {
-            "node": "24d4809b-105c-4bbe-a815-154df7b10a27",
+            "node": "Form1",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "24d4809b-105c-4bbe-a815-154df7b10a27": {
+    "Form3": {
       "main": [
         [
           {
-            "node": "b3c66d07-0f98-4338-baef-d8206fb0e1cf",
+            "node": "Get many rows1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "OpenWeatherMap1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge All1",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "b3c66d07-0f98-4338-baef-d8206fb0e1cf": {
+    "Get many rows1": {
       "main": [
         [
           {
-            "node": "51487cb0-eae0-4c8e-9d02-17a3b2d5dfd4",
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "Merge Weather + RP1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "OpenWeatherMap1": {
+      "main": [
+        [
+          {
+            "node": "Merge Weather + RP1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTML1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Weather + RP1": {
+      "main": [
+        [
+          {
+            "node": "Merge All1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge All1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML1": {
+      "main": [
+        [
+          {
+            "node": "Move Binary Data (HTML file)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML → PDF (Gotenberg)1": {
+      "main": [
+        [
+          {
+            "node": "Code1",
             "type": "main",
             "index": 0
           }
@@ -251,12 +1284,15 @@
       ]
     }
   },
+  "active": false,
   "settings": {
     "executionOrder": "v1"
   },
-  "active": false,
-  "createdAt": "2025-09-06T19:34:28.030064Z",
+  "versionId": "477cf9b1-afdb-4730-ad64-80e316a7c520",
   "meta": {
-    "instanceId": "e47f38cf-4fbd-4b54-9b8e-5e87bdb1adf4"
-  }
+    "templateCredsSetupCompleted": true,
+    "instanceId": "2a3eab6b88b8510864f912a25810c5ba12780e3df16b467154212c331aaa0bdb"
+  },
+  "id": "k96YNnQ923RHQfSp",
+  "tags": []
 }
