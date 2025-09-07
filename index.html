@@ -5,24 +5,16 @@
   <title>Standort erfassen</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    :root{
-      --bg:#dadce0; --card:#bcebd3; --line:#e5e7eb;
-      --brand:#0f172a; --accent:#0ea5e9; --muted:#667085;
-    }
-    *{box-sizing:border-box}
-    body{margin:0;background:var(--bg);font-family:system-ui,Segoe UI,Roboto,Arial}
+    :root{--bg:#365743;--card:#032611;--line:#e5e7eb;--brand:#0f172a;--accent:#0ea5e9;--muted:#667085;--color:#f0f7f3}
+    *{box-sizing:border-box} body{margin:0;background:var(--bg);font-family:system-ui,Segoe UI,Roboto,Arial}
     main{max-width:720px;margin:0 auto;padding:24px}
     .card{background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 6px 18px rgba(16,24,40,.06);padding:24px}
-    h1{margin:0 0 8px;font-size:30px;color:#006400}
     h2{margin:0 0 8px;font-size:26px;color:var(--brand)}
+    h1{margin:0 0 8px;font-size:26px;color:var(--brand)}
     p.hint{margin:0 0 16px;color:var(--muted)}
     .row{display:flex;gap:12px;flex-wrap:wrap;margin:12px 0}
-    input[type="text"]{
-      flex:1 1 220px;min-width:220px;padding:12px;border:1px solid var(--line);border-radius:10px;font-size:16px
-    }
-    button{
-      padding:12px 16px;border-radius:10px;border:1px solid var(--brand);background:var(--brand);color:#fff;cursor:pointer;font-weight:600
-    }
+    input[type="text"]{flex:1 1 220px;min-width:220px;padding:12px;border:1px solid var(--line);border-radius:10px;font-size:16px}
+    button{padding:12px 16px;border-radius:10px;border:1px solid var(--brand);background:var(--brand);color:#fff;cursor:pointer;font-weight:600}
     button.secondary{background:#fff;color:var(--brand)}
     #msg{margin-top:8px;color:#b45309}
     .actions{display:none;gap:10px;flex-wrap:wrap;margin-top:12px}
@@ -31,111 +23,69 @@
 <body>
   <main>
     <div class="card">
-      <h1>📋 Forstaufträge 🖊️</h1>
+      <h1>📝 Forstauftrag:</h1>
       <h2>📍 Standort automatisch ermitteln</h2>
       <p class="hint">
         Bitte Standortzugriff im Browser erlauben.<br />
-        Safari: <strong>Einstellungen → Datenschutz & Sicherheit → Ort → Safari → Aktivieren</strong><br />
+        Safari: <strong>Einstellungen → Datenschutz &amp; Sicherheit → Ort → Safari → Aktivieren</strong><br />
         Android: <strong>Standortdienste aktivieren + Browser-Berechtigung zulassen</strong>
       </p>
 
-      <!-- Manuelle Fallback-Eingabe -->
       <div class="row">
         <input type="text" id="latitude"  placeholder="Breitengrad (z. B. 48.137154)" />
         <input type="text" id="longitude" placeholder="Längengrad (z. B. 11.576124)" />
       </div>
 
       <div class="row">
-        <button id="btn-locate">📡 Standort ermitteln & Formular öffnen</button>
-        <button id="btn-open-manual" class="secondary">✍️ Manuell eingeben & öffnen</button>
+        <button id="btn-locate">📡 Standort ermitteln &amp; Formular öffnen</button>
+        <button id="btn-open-manual" class="secondary">✍️ Manuell eingeben &amp; öffnen</button>
         <button id="btn-open-empty"  class="secondary">↪️ Ohne Koordinaten fortfahren</button>
       </div>
 
       <div id="msg"></div>
       <div id="actions" class="actions">
-        <!-- (sichtbar, wenn GPS verweigert wurde) -->
-        <button id="btn-open-manual-2" class="secondary">✍️ Manuell eingeben & öffnen</button>
+        <button id="btn-open-manual-2" class="secondary">✍️ Manuell eingeben &amp; öffnen</button>
         <button id="btn-open-empty-2"  class="secondary">↪️ Ohne Koordinaten fortfahren</button>
       </div>
     </div>
   </main>
 
   <script>
-    // ------- Konfiguration -------
-    const DEFAULT_FORM_URL = "https://DEIN-N8N.HOST/form/XXXXXXXX";
+    const DEFAULT_FORM_URL = "https://n8n.ryzeup.ai/form-test/2d6de1b5-94ca-48a0-910d-4732073b32da";
     const FORM_URL = new URLSearchParams(location.search).get("next") || DEFAULT_FORM_URL;
 
-    // ------- Hilfsfunktionen -------
     const $ = sel => document.querySelector(sel);
     const msg = $("#msg");
     const actions = $("#actions");
     const latEl = $("#latitude");
     const lonEl = $("#longitude");
 
-    function normalizeCoord(v){
-      if (!v) return null;
-      v = String(v).trim().replace(",", ".");
-      const n = Number(v);
-      return Number.isFinite(n) ? n : null;
-    }
-    function isValidLat(v){ return v >= -90 && v <= 90; }
-    function isValidLon(v){ return v >= -180 && v <= 180; }
+    function normalizeCoord(v){ if(!v) return null; v=String(v).trim().replace(",","."); const n=Number(v); return Number.isFinite(n)?n:null; }
+    function isValidLat(v){ return v>=-90 && v<=90; }
+    function isValidLon(v){ return v>=-180 && v<=180; }
 
-    function openFormWith(lat, lon){
-      const u = new URL(FORM_URL);
-      if (lat != null && lon != null){
-        u.searchParams.set("lat", lat.toFixed(6));
-        u.searchParams.set("lon", lon.toFixed(6));
-      }
-      location.href = u.toString();
-    }
-    function openFormNoGeo(){
-      const u = new URL(FORM_URL);
-      u.searchParams.set("noGeo","1");
-      location.href = u.toString();
-    }
+    function openFormWith(lat, lon){ const u=new URL(FORM_URL); u.searchParams.set("lat", lat.toFixed(6)); u.searchParams.set("lon", lon.toFixed(6)); location.href=u.toString(); }
+    function openFormNoGeo(){ const u=new URL(FORM_URL); u.searchParams.set("noGeo","1"); location.href=u.toString(); }
 
-    // ------- Events -------
-    $("#btn-locate").addEventListener("click", () => {
+    document.getElementById("btn-locate").addEventListener("click", () => {
       msg.textContent = "Bitte Standortfreigabe erlauben…";
       actions.style.display = "none";
-      if (!navigator.geolocation){
-        msg.textContent = "Geolocation wird von diesem Browser nicht unterstützt.";
-        actions.style.display = "flex";
-        return;
-      }
+      if (!navigator.geolocation){ msg.textContent="Geolocation wird von diesem Browser nicht unterstützt."; actions.style.display="flex"; return; }
       navigator.geolocation.getCurrentPosition(
-        p => {
-          const lat = p.coords.latitude;
-          const lon = p.coords.longitude;
-          // Felder auch füllen (falls Nutzer zurück will)
-          latEl.value = lat.toFixed(6);
-          lonEl.value = lon.toFixed(6);
-          openFormWith(lat, lon);
-        },
-        err => {
-          msg.textContent = "Ohne Koordinaten können keine Rettungspunkte ermittelt werden.";
-          actions.style.display = "flex";
-        },
+        p => { const lat=p.coords.latitude; const lon=p.coords.longitude; latEl.value=lat.toFixed(6); lonEl.value=lon.toFixed(6); openFormWith(lat, lon); },
+        err => { msg.textContent="Ohne Koordinaten können keine Rettungspunkte ermittelt werden."; actions.style.display="flex"; },
         { enableHighAccuracy:true, timeout:15000 }
       );
     });
 
-    function handleManualOpen(){
-      const lat = normalizeCoord(latEl.value);
-      const lon = normalizeCoord(lonEl.value);
-      if (lat == null || lon == null || !isValidLat(lat) || !isValidLon(lon)){
-        msg.textContent = "Bitte gültige Koordinaten eingeben (Lat −90..90, Lon −180..180) oder „Ohne Koordinaten fortfahren“.";
-        return;
-      }
+    function handleManualOpen(){ const lat=normalizeCoord(latEl.value); const lon=normalizeCoord(lonEl.value);
+      if(lat==null || lon==null || !isValidLat(lat) || !isValidLon(lon)){ msg.textContent="Bitte gültige Koordinaten eingeben (Lat −90..90, Lon −180..180) oder „Ohne Koordinaten fortfahren“."; return; }
       openFormWith(lat, lon);
     }
-
-    $("#btn-open-manual").addEventListener("click", handleManualOpen);
-    $("#btn-open-manual-2").addEventListener("click", handleManualOpen);
-
-    $("#btn-open-empty").addEventListener("click", openFormNoGeo);
-    $("#btn-open-empty-2").addEventListener("click", openFormNoGeo);
+    document.getElementById("btn-open-manual").addEventListener("click", handleManualOpen);
+    document.getElementById("btn-open-manual-2").addEventListener("click", handleManualOpen);
+    document.getElementById("btn-open-empty").addEventListener("click", openFormNoGeo);
+    document.getElementById("btn-open-empty-2").addEventListener("click", openFormNoGeo);
   </script>
 </body>
 </html>
