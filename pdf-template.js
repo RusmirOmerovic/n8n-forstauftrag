@@ -85,15 +85,15 @@ const badges = (arr=[]) => arr.length ? `<div class="badges-list">${arr.map(badg
 const headerTemplate = `
   <style>
     *{box-sizing:border-box} body{margin:0;font-family:Arial,Helvetica,sans-serif}
-    .h-wrap{background:#B8E6F1; padding:10px 24px; display:flex; align-items:center; justify-content:space-between; font-size:10px;}
+    .h-wrap{background:#B8E6F1; padding:10px 24px; display:flex; align-items:center; justify-content:space-between; font-size:11px;} /* +1 */
     .h-left{display:flex; align-items:center; gap:12px}
-    .h-left img{width:28px;height:28px;object-fit:contain}
-    .h-title{font-size:14px;font-weight:700}
-    .h-meta{font-size:10px;opacity:.8}
+    .h-left img{width:auto; max-height:30px; object-fit:contain}  /* sicher begrenzen */
+    .h-title{font-size:15px;font-weight:700}                      /* +1 */
+    .h-meta{font-size:11px;opacity:.8}
   </style>
   <div class="h-wrap">
     <div class="h-left">
-      ${logoDataUrl ? `<img src="${esc(logoDataUrl)}" alt="Logo"/>` : `<div style="width:28px;height:28px;border-radius:4px;background:#fff;"></div>`}
+      ${logoDataUrl ? `<img src="${esc(logoDataUrl)}" alt="Logo"/>` : `<div style="width:30px;height:30px;border-radius:4px;background:#fff;"></div>`}
       <div>
         <div class="h-title">${esc(firma.name)}</div>
         <div class="h-meta">Arbeitsauftrag • ${esc(meta.einsatzort || '—')}</div>
@@ -109,7 +109,7 @@ const headerTemplate = `
 const footerTemplate = `
   <style>
     *{box-sizing:border-box} body{margin:0;font-family:Arial,Helvetica,sans-serif}
-    .f-wrap{background:#BFC0C3; padding:8px 24px; display:flex; align-items:center; justify-content:space-between; font-size:9px;}
+    .f-wrap{background:#BFC0C3; padding:8px 24px; display:flex; align-items:center; justify-content:space-between; font-size:10px;} /* +1 */
     .f-stack{display:flex; gap:16px; align-items:center}
     .f-stack a:first-child{font-weight:700}
     .page::after{content: counter(page) " / " counter(pages);}
@@ -4596,17 +4596,16 @@ const html = `<!doctype html>
     --surface: #12211a;
     --surface-2: #0e1b15;
     --card: #12261c;
-    --brand-1: #10b981;      /* Akzentgrün */
-    --brand-2: #34d399;      /* Verlauf */
-    --text: #e6f2ec;         /* Haupttext */
-    --muted: #9fb3aa;        /* Sekundärtext */
-    --border: #1f3a2e;       /* Kartenrahmen */
+    --brand-1: #10b981;
+    --brand-2: #34d399;
+    --text: #e6f2ec;
+    --muted: #9fb3aa;
+    --border: #1f3a2e;
     --warn: #f59e0b;
     --ok: #22c55e;
     --chip-bg: #0f3326;
   }
 
-  /* Vollflächig drucken */
   @page { size: A4; margin: 0; }
   html, body { height: 100%; }
   * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -4615,84 +4614,82 @@ const html = `<!doctype html>
     margin:0; padding:0;
     background: var(--bg);
     color: var(--text);
-    font: 12pt/1.45 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    font: 15pt/1.55 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
   }
 
-  /* Eine A4-Seite mit Innenabstand – keine äußeren Ränder */
   .page{
     width: 210mm;
     min-height: 297mm;
-    height: 297mm;
     margin: 0 auto;
     background: var(--surface);
     display: grid;
     grid-template-rows: auto 1fr auto;
-    padding: 16mm 16mm 14mm 16mm;   /* Innenabstand statt Seitenränder */
-    overflow: hidden;
+    padding: 16mm;
+    overflow: visible;
     page-break-after: always;
   }
 
-  /* Obere Logozeile */
   .logos{
-    display:flex; align-items:center; justify-content:flex-start; gap:16mm;
-    margin-bottom: 8mm;
+    display:flex; align-items:center; justify-content:flex-start;
+    gap: 16mm;
+    margin: 0 0 10mm 0;
+    overflow: hidden;
   }
   .logos img{
-    height: 14mm;
-    width: auto;
+    max-height: 20mm;
+    width: auto; height: auto;
     display: block;
     max-width: 100%;
+    object-fit: contain;
   }
 
-  /* Headline-Bar */
   .header{
     background: linear-gradient(135deg, var(--brand-1), var(--brand-2));
     color:#05110d;
     border-radius: 10px;
-    padding: 10mm 12mm;
-    margin-bottom: 8mm;
+    padding: 7mm 9mm;
+    margin-bottom: 7mm;
   }
-  .header h1{ margin:0 0 2mm 0; font-size: 20pt; letter-spacing: .2px; }
+  .header h1{
+    margin: 0 0 2mm;
+    font-size: 25pt;
+    letter-spacing: .2px;
+  }
   .header .sub{ margin:0; opacity:.85; }
   .meta{
     margin-top: 2mm;
-    display:flex; gap:10mm; flex-wrap:wrap;
+    display:flex; gap:6mm; flex-wrap:wrap;
     font-size:10pt; color:#052017; font-weight:600;
   }
 
-  /* Inhalt */
   .content{ display:block; }
 
   .card{
     background: var(--card);
     border:1px solid var(--border);
     border-radius:12px;
-    margin: 0 0 6mm 0;
+    margin: 7mm 0;
     overflow:hidden;
-    box-shadow: 0 2px 10px rgba(0,0,0,.18);
+    box-shadow: 0 8px 24px rgba(0,0,0,.23);
     page-break-inside: avoid;
     break-inside: avoid-page;
   }
   .card .card-h{
     background: linear-gradient(90deg, #0f2b20, rgba(15,43,32,0));
-    padding: 8mm 10mm 5mm 10mm;
+    padding: 5mm 7mm 4mm;
     font-weight:700; letter-spacing:.3px; border-bottom:1px solid var(--border);
   }
-  .card .card-b{ padding: 8mm 10mm; }
+  .card .card-b{ padding: 6mm 7mm; }
 
   .grid{
-    display:flex;
-    flex-wrap:wrap;
-    gap: 6mm 10mm;
+    display:flex; flex-wrap:wrap; gap: 5mm 8mm;
   }
   .row{
-    display:flex;
-    flex-direction:column;
-    flex:1 1 calc(50% - 10mm);
-    min-width:90mm;
+    display:flex; flex-direction:column; flex:1 1 calc(50% - 8mm); min-width:90mm;
   }
-  .label{ font-size: 9pt; color: var(--muted); text-transform: uppercase; letter-spacing:.35px; margin-bottom:1mm; }
-  .val{ font-size: 11.5pt; font-weight:600; }
+
+  .label{ font-size: 10pt; color: var(--muted); text-transform: uppercase; letter-spacing:.35px; margin-bottom:1mm; }
+  .val{ font-size: 13pt; font-weight:600; }
 
   .yes{ color: var(--ok); }
   .no{ color: var(--warn); }
@@ -4702,17 +4699,12 @@ const html = `<!doctype html>
     background: var(--chip-bg);
     border:1px solid var(--border);
     padding: 2.5mm 4mm; border-radius: 999px;
-    font-size:9pt; font-weight:700; color: var(--text);
+    font-size:9.5pt; font-weight:700; color: var(--text);
   }
   .chip.hazard{ background:#3b1f0a; border-color:#7a3c11; color:#ffcc88; }
 
-  .weather{
-    display:grid; grid-template-columns: repeat(5, 1fr); gap:6mm; text-align:center;
-  }
-  .wbox{
-    background: var(--surface-2);
-    border:1px solid var(--border); border-radius:10px; padding:6mm 4mm;
-  }
+  .weather{ display:grid; grid-template-columns: repeat(5, 1fr); gap:6mm; text-align:center; }
+  .wbox{ background: var(--surface-2); border:1px solid var(--border); border-radius:10px; padding:6mm 4mm; }
   .wval{ font-size: 16pt; font-weight:800; color: var(--brand-2); margin-bottom:1mm; }
   .wlab{ font-size:8.5pt; color: var(--muted); text-transform:uppercase; }
 
@@ -4720,32 +4712,20 @@ const html = `<!doctype html>
   .tbl thead th{
     background:#0f2b20; color:#c9f0e1; text-align:left; padding:4.5mm 5mm; font-size:10pt; border-bottom:1px solid var(--border);
   }
-  .tbl td{ padding:4.5mm 5mm; border-bottom:1px solid var(--border); }
+  .tbl td{ padding:4mm 5mm; border-bottom:1px solid var(--border); }
   .tbl tr:last-child td{ border-bottom:0; }
   .td-num{ text-align:right; font-weight:700; color: var(--brand-2); }
 
-  .gps{
-    background: var(--surface-2); border:1px solid var(--border); border-radius:10px; padding:6mm; text-align:center;
-  }
-  .coord{ font: 700 14pt/1.1 "SFMono-Regular", ui-monospace, Menlo, Consolas, monospace; color: #8be0b6; margin: 2mm 0 3mm; }
+  .gps{ background: var(--surface-2); border:1px solid var(--border); border-radius:10px; padding:6mm; text-align:center; }
+  .coord{ font: 700 14pt/1.1 ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; color: #8be0b6; margin: 2mm 0 3mm; }
   .map a{ color: var(--brand-2); text-decoration:none; font-weight:700; }
   .map a:hover{ text-decoration:underline; }
 
-    .consent{ display:flex; align-items:center; gap:4mm; }
-    .consent-check{ font-size:14pt; color: var(--brand-2); }
-    .consent-text{ font-size:10pt; line-height:1.4; }
-    .consent-note{ margin-top:4mm; font-size:8.5pt; color: var(--muted); }
+  .consent{ display:flex; align-items:center; gap:4mm; }
+  .consent-check{ font-size:14pt; color: var(--brand-2); }
+  .consent-text{ font-size:10.5pt; line-height:1.4; }
+  .consent-note{ margin-top:4mm; font-size:9pt; color: var(--muted); }
 
-  .footer{
-    margin-top: 8mm;
-    border-top: 1px solid var(--border);
-    padding-top: 6mm;
-    display:flex; align-items:flex-start; justify-content:space-between; gap:8mm; color: var(--muted); font-size:9.5pt;
-  }
-  .f-left{ max-width: 105mm; }
-  .f-right{ text-align:right; }
-
-  /* Mobile Vorschau */
   @media screen and (max-width: 900px){
     .grid{ flex-direction:column; }
     .row{ flex-basis:100%; }
@@ -4803,22 +4783,28 @@ const html = `<!doctype html>
             <div class="row"><div class="label">Maschinenbediener</div><div class="val">${esc(sicherheit.maschinenbediener)}</div></div>
           </div>
 
-          ${sicherheit.psaNote && sicherheit.psaNote !== '—' ? `
-          <div style="margin-top:5mm">
-            <div class="label">Bemerkungen PSA</div>
-            <div class="val">${esc(sicherheit.psaNote)}</div>
-          </div>` : ''}
+          ${ (sicherheit.psaNote && sicherheit.psaNote !== '—')
+            ? '<div style="margin-top:5mm">'
+                + '<div class="label">Bemerkungen PSA</div>'
+                + '<div class="val">' + esc(sicherheit.psaNote) + '</div>'
+              + '</div>'
+            : ''
+          }
 
           <div style="margin-top:6mm">
             <div class="label">Maschinentyp(en)</div>
-            <div class="chips">${sicherheit.maschinen.map(m => `<span class="chip">${esc(m)}</span>`).join('')}</div>
+            <div class="chips">${sicherheit.maschinen.map(m => '<span class="chip">' + esc(m) + '</span>').join('')}</div>
           </div>
 
-          ${sicherheit.gefaehrdungen.length ? `
-          <div style="margin-top:6mm">
-            <div class="label">Besondere Gefährdungen</div>
-            <div class="chips">${sicherheit.gefaehrdungen.map(g => `<span class="chip hazard">${esc(g)}</span>`).join('')}</div>
-          </div>` : ''}
+          ${ sicherheit.gefaehrdungen.length
+            ? '<div style="margin-top:6mm">'
+                + '<div class="label">Besondere Gefährdungen</div>'
+                + '<div class="chips">'
+                  + sicherheit.gefaehrdungen.map(g => '<span class="chip hazard">' + esc(g) + '</span>').join('')
+                + '</div>'
+              + '</div>'
+            : ''
+          }
 
           <div class="grid" style="margin-top:6mm">
             <div class="row"><div class="label">Maßnahmen bei Gefährdung eingeleitet</div><div class="val ${sicherheit.massnahmen === 'ja' ? 'yes' : 'no'}">${esc(sicherheit.massnahmen)}</div></div>
@@ -4846,15 +4832,18 @@ const html = `<!doctype html>
           <table class="tbl">
             <thead><tr><th>#</th><th>RP-Nummer</th><th>Beschreibung</th><th>Bundesland</th><th style="text-align:right">Entfernung</th></tr></thead>
             <tbody>
-              ${rp.length ? rp.map((p,i)=>`
-              <tr>
-                <td>${i+1}</td>
-                <td><strong>${esc(p.rp_nr)}</strong></td>
-                <td>${esc(p.beschreibung)}</td>
-                <td>${esc(p.bundesland)}</td>
-                <td class="td-num">${esc(p.entfernung_m)} m</td>
-              </tr>`).join('') :
-              `<tr><td colspan="5" style="text-align:center;color:var(--muted);font-style:italic;padding:7mm 0">Keine Rettungspunkte gefunden</td></tr>`}
+              ${ rp.length
+                ? rp.map((p,i) =>
+                    '<tr>'
+                      + '<td>' + (i+1) + '</td>'
+                      + '<td><strong>' + esc(p.rp_nr) + '</strong></td>'
+                      + '<td>' + esc(p.beschreibung) + '</td>'
+                      + '<td>' + esc(p.bundesland) + '</td>'
+                      + '<td class="td-num">' + esc(p.entfernung_m) + ' m</td>'
+                    + '</tr>'
+                  ).join('')
+                : '<tr><td colspan="5" style="text-align:center;color:var(--muted);font-style:italic;padding:7mm 0">Keine Rettungspunkte gefunden</td></tr>'
+              }
             </tbody>
           </table>
         </div>
@@ -4867,7 +4856,10 @@ const html = `<!doctype html>
             <div class="label">Koordinaten</div>
             <div class="coord">${esc(gps.lat || '—')}, ${esc(gps.lon || '—')}</div>
             <div class="map">
-              ${mapsUrl ? `<a href="${esc(mapsUrl)}">🗺️ Karte öffnen</a>` : '<span style="color:var(--muted)">Kein Kartenlink verfügbar</span>'}
+              ${ mapsUrl
+                ? '<a href="' + esc(mapsUrl) + '">🗺️ Karte öffnen</a>'
+                : '<span style="color:var(--muted)">Kein Kartenlink verfügbar</span>'
+              }
             </div>
           </div>
         </div>
@@ -4883,22 +4875,8 @@ const html = `<!doctype html>
           <div class="consent-note">Diese digitale Zustimmung per Haken repräsentiert eine Unterschrift des Nutzers.</div>
         </div>
       </div>
-    </div>
 
-    <!-- Footer im Body (keine Gotenberg-Header/Footer nötig) -->
-    <div class="footer">
-      <div class="f-left">
-        <div><strong>Ryzeup UG (haftungsbeschränkt)</strong></div>
-        <div>Vertretungsberechtigt: Robin Alexander Riemel</div>
-        <div>Rotthang 3, 84494 Neumarkt-Sankt Veit</div>
-        <div>Amtsgericht Traunstein · HRB 31367</div>
-      </div>
-      <div class="f-right">
-        <div>© 2025 Ryzeup UG (haftungsbeschränkt). All rights reserved.</div>
-        <div>ryzeup.ai · info@ryzeup.ai</div>
-      </div>
     </div>
-
   </div>
 </body>
 </html>
