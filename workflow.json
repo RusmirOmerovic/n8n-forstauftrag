@@ -1,5 +1,5 @@
 {
-  "name": "forstform",
+  "name": "forstauftrag",
   "nodes": [
     {
       "parameters": {
@@ -9,31 +9,19 @@
         "destinationKey": "files",
         "options": {
           "encoding": "utf8",
-          "fileName": "index.html"
+          "fileName": "index.html",
+          "mimeType": "text/html; charset=utf-8",
+          "useRawData": true
         }
       },
       "type": "n8n-nodes-base.moveBinaryData",
       "typeVersion": 1.1,
       "position": [
-        -3488,
-        1056
+        240,
+        576
       ],
-      "id": "c06df9e9-a3c6-4c47-bcb8-5409c6497e33",
+      "id": "78fd8177-815d-4637-ba6f-4a2fc9f4f5e6",
       "name": "Move Binary Data (HTML file)"
-    },
-    {
-      "parameters": {
-        "mode": "runOnceForEachItem",
-        "jsCode": "if (item.binary && item.binary.data) { item.binary.data.fileName = 'Forstauftrag.pdf'; item.binary.data.mimeType = 'application/pdf'; item.binary.data.fileExtension = 'pdf'; } return item;"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        -3056,
-        960
-      ],
-      "id": "040e6893-cc64-4029-b30b-09a25bcbe48a",
-      "name": "Code1"
     },
     {
       "parameters": {
@@ -272,10 +260,10 @@
       "type": "n8n-nodes-base.form",
       "typeVersion": 1,
       "position": [
-        -5264,
-        1040
+        -1104,
+        304
       ],
-      "id": "667df0cf-4515-4480-b2d2-6fe32ef8e442",
+      "id": "c6e0251f-292c-472c-98f9-647cb21c7844",
       "name": "Form1",
       "webhookId": "c9f15e3c-026b-49f5-99a1-2dfa3b8853e9"
     },
@@ -336,10 +324,10 @@
       "type": "n8n-nodes-base.formTrigger",
       "typeVersion": 2.2,
       "position": [
-        -5488,
-        1040
+        -1328,
+        208
       ],
-      "id": "a7d795c3-03de-46a4-84c3-2e2344e68739",
+      "id": "001e82dc-e404-4289-b2aa-37bf11633760",
       "name": "On form submission1",
       "webhookId": "2d6de1b5-94ca-48a0-910d-4732073b32da"
     },
@@ -353,10 +341,10 @@
       "type": "n8n-nodes-base.form",
       "typeVersion": 1,
       "position": [
-        -5040,
-        1040
+        -880,
+        512
       ],
-      "id": "48f857c3-f744-4d19-a9e5-1aa36e59940d",
+      "id": "f43b44a2-9dfb-462d-8045-c13ad59332d2",
       "name": "Form3",
       "webhookId": "435006ea-b74b-4078-917f-57ef18d9a85d"
     },
@@ -394,10 +382,10 @@
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        -4816,
-        1184
+        -656,
+        656
       ],
-      "id": "d4ac98fa-f421-4b53-aaa2-c965f0cb44fe",
+      "id": "b552aebd-d521-4c6e-b1a0-26fc03e06c35",
       "name": "Get many rows1",
       "credentials": {
         "supabaseApi": {
@@ -405,19 +393,6 @@
           "name": "Rettungspunkte(Supabase)"
         }
       }
-    },
-    {
-      "parameters": {
-        "jsCode": "const latitude = parseFloat($('Form3').first().json['Standortdaten - latitude (erster Wert in GoogleMaps)']);\nconst longitude = parseFloat($('Form3').first().json['Standortdaten - longitude (zweiter Wert in GoogleMaps)']);\nconst rettungspunkte = $items();\n\nfunction distance(lat1, lon1, lat2, lon2) {\n  const R = 6371e3;\n  const toRad = deg => deg * (Math.PI / 180);\n  const dLat = toRad(lat2 - lat1);\n  const dLon = toRad(lon2 - lon1);\n  const a = Math.sin(dLat / 2) ** 2 +\n            Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *\n            Math.sin(dLon / 2) ** 2;\n  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));\n  return R * c;\n}\n\nconst distanzArray = rettungspunkte.map(punkt => {\n  const dist = distance(latitude, longitude, punkt.json.wgs_breite, punkt.json.wgs_laenge);\n  return {\n    rp_nr: punkt.json.rp_nr,\n    entfernung_m: Math.round(dist),\n    lat: punkt.json.wgs_breite,\n    lon: punkt.json.wgs_laenge,\n    id: punkt.json.id,\n    beschreibung: punkt.json.beschreibung,\n    bundesland: punkt.json.bundesland\n  };\n});\n\nconst top3 = distanzArray.sort((a, b) => a.entfernung_m - b.entfernung_m).slice(0, 3);\n\nreturn [\n  {\n    json: {\n      gps_ursprung: { latitude, longitude },\n      top_3_rettungspunkte: top3\n    }\n  }\n];\n"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        -4592,
-        1184
-      ],
-      "id": "5aad2e68-a279-4bee-832c-03414a21ff88",
-      "name": "Code2"
     },
     {
       "parameters": {
@@ -429,10 +404,10 @@
       "type": "n8n-nodes-base.openWeatherMap",
       "typeVersion": 1,
       "position": [
-        -4592,
-        880
+        -656,
+        464
       ],
-      "id": "22d8a080-96ff-42e9-9350-dd3f0271a097",
+      "id": "b3f2a915-1d53-48eb-91a8-88ff2e5d3c5c",
       "name": "OpenWeatherMap1",
       "credentials": {
         "openWeatherMapApi": {
@@ -440,224 +415,6 @@
           "name": "OpenWeatherMap account"
         }
       }
-    },
-    {
-      "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "4031edef-83ba-46c3-bee0-c60f17ee4aee",
-              "name": "Verkehrsrechtliche Anordnung/Einsatz an Straße",
-              "value": "={{ $('Form3').all()[0].json['Verkehrsrechtliche Anordnung/Einsatz an Straße'] }}",
-              "type": "string"
-            },
-            {
-              "id": "9e32a4ba-0e81-4e99-941f-999659516d75",
-              "name": "Absperrung",
-              "value": "={{ $('Form3').all()[0].json.Absperrung }}",
-              "type": "string"
-            },
-            {
-              "id": "d0100061-8e8b-4fb5-b91e-10fdf1cce157",
-              "name": "Posten - wie viele Helfer? ",
-              "value": "={{ $('Form3').all()[0].json['Posten - wie viele Helfer? '] }}",
-              "type": "string"
-            },
-            {
-              "id": "8ed5a208-cce9-4a4f-90bd-e90989c705aa",
-              "name": "Persönliche Schutzausrüstung geprüft/getragen? ",
-              "value": "={{ $('Form3').all()[0].json['Persönliche Schutzausrüstung geprüft/getragen? '] }}",
-              "type": "string"
-            },
-            {
-              "id": "d8e06d80-dda5-4ab9-af50-0402d1aa511e",
-              "name": "Bemerkungen zu Schutzausrüstung: ",
-              "value": "={{ $('Form3').all()[0].json['Bemerkungen zu Schutzausrüstung: '] }}",
-              "type": "string"
-            },
-            {
-              "id": "cd14b4e2-a4e3-4065-8038-c0f8c6b7d0b9",
-              "name": "Zufahrt für Maschinen möglich? ",
-              "value": "={{ $('Form3').all()[0].json['Zufahrt für Maschinen möglich? '] }}",
-              "type": "string"
-            },
-            {
-              "id": "9561f2d5-561b-468a-8ac4-acc225dd3569",
-              "name": "Maschintyp[0]",
-              "value": "={{ $('Form3').all()[0].json.Maschintyp[0] }}",
-              "type": "string"
-            },
-            {
-              "id": "074d8779-b41a-47b0-9640-d40b22defda4",
-              "name": "Maschinenbediener: ",
-              "value": "={{ $('Form3').all()[0].json['Maschinenbediener: '] }}",
-              "type": "string"
-            },
-            {
-              "id": "7fe57e3d-4068-4e64-b7d9-182b1adaf9f0",
-              "name": "Besondere Gefährdungen:",
-              "value": "={{ $('Form3').all()[0].json['Besondere Gefährdungen:'] }}",
-              "type": "array"
-            },
-            {
-              "id": "f5b31785-b00e-485a-b434-8c3dcd54611d",
-              "name": "['Besondere Gefährdungen:'][0]",
-              "value": "={{ $('Form3').all()[0].json['Besondere Gefährdungen:'][0] }}",
-              "type": "string"
-            },
-            {
-              "id": "3eef2192-3973-4afa-b632-0c791e004cb7",
-              "name": "['Besondere Gefährdungen:'][1]",
-              "value": "={{ $('Form3').all()[0].json['Besondere Gefährdungen:'][1] }}",
-              "type": "string"
-            },
-            {
-              "id": "845b76e1-0efb-47ca-ae1e-d6f33efa326c",
-              "name": "Maßnahmen bei besonderer Gefährdung eingeleitet?",
-              "value": "={{ $('Form3').all()[0].json['Maßnahmen bei besonderer Gefährdung eingeleitet?'] }}",
-              "type": "string"
-            },
-            {
-              "id": "45d36278-1f9f-486d-af20-56144d13d775",
-              "name": "Im Trupp/Arbeitsgruppe  unterwiesen?",
-              "value": "={{ $('Form3').all()[0].json['Im Trupp/Arbeitsgruppe  unterwiesen?'] }}",
-              "type": "string"
-            },
-            {
-              "id": "98e0d690-ebe2-4679-a7c3-a42b22873abf",
-              "name": "Zustimmung:",
-              "value": "={{ $('Form3').all()[0].json['Zustimmung:'] }}",
-              "type": "array"
-            },
-            {
-              "id": "92852a13-44f7-4b00-ab26-94da604fb732",
-              "name": "['Zustimmung:'][0]",
-              "value": "={{ $('Form3').all()[0].json['Zustimmung:'][0] }}",
-              "type": "string"
-            },
-            {
-              "id": "701fec5a-3caa-49da-9e79-3225f249fe9b",
-              "name": "submittedAt",
-              "value": "={{ $('Form3').all()[0].json.submittedAt }}",
-              "type": "string"
-            },
-            {
-              "id": "bfa382ea-6346-431d-a6a1-97f7f335b6d1",
-              "name": "weather[0].description",
-              "value": "={{ $json.weather[0].description }}",
-              "type": "string"
-            },
-            {
-              "id": "b4afd103-33fe-4b61-be11-68555730e3e7",
-              "name": "main.temp",
-              "value": "={{ $json.main.temp }}",
-              "type": "number"
-            },
-            {
-              "id": "19ffe73f-1a79-43cd-9582-ffb6ce466f34",
-              "name": "main.pressure",
-              "value": "={{ $json.main.pressure }}",
-              "type": "number"
-            },
-            {
-              "id": "70eb1176-6e6a-4e57-8b10-59df18670564",
-              "name": "wind.speed",
-              "value": "={{ $json.wind.speed }}",
-              "type": "number"
-            },
-            {
-              "id": "4c7f7b00-2de7-4eb1-9eaa-7fdfcb6707af",
-              "name": "clouds.all",
-              "value": "={{ $json.clouds.all }}",
-              "type": "number"
-            },
-            {
-              "id": "675275f6-8b38-4559-8925-1f0a7392a49d",
-              "name": "top_3_rettungspunkte",
-              "value": "={{ $json.top_3_rettungspunkte }}",
-              "type": "string"
-            },
-            {
-              "id": "7c6789e1-554a-4850-bf05-192458c0705a",
-              "name": "top_3_rettungspunkte[0]",
-              "value": "={{ $json.top_3_rettungspunkte[0] }}",
-              "type": "string"
-            },
-            {
-              "id": "80ea20fb-634a-45f1-8ab1-b232d7ed8980",
-              "name": "top_3_rettungspunkte[0].rp_nr",
-              "value": "={{ $json.top_3_rettungspunkte[0].rp_nr }}",
-              "type": "string"
-            },
-            {
-              "id": "5a259db8-e81f-4ea0-84e3-28c9bc3dbdd2",
-              "name": "top_3_rettungspunkte[0].entfernung_m",
-              "value": "={{ $json.top_3_rettungspunkte[0].entfernung_m }}",
-              "type": "string"
-            },
-            {
-              "id": "5f055c64-4ae7-44ff-aa58-af4543074f6e",
-              "name": "top_3_rettungspunkte[0].beschreibung",
-              "value": "={{ $json.top_3_rettungspunkte[0].beschreibung }}",
-              "type": "string"
-            },
-            {
-              "id": "df1c0ebf-bbc1-4fe0-bbf6-9241b8bf8a80",
-              "name": "top_3_rettungspunkte[0].bundesland",
-              "value": "={{ $json.top_3_rettungspunkte[0].bundesland }}",
-              "type": "string"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [
-        -3920,
-        960
-      ],
-      "id": "8dd148d6-70a5-4993-9a9b-ccf6a5bf0b7a",
-      "name": "Edit Fields1"
-    },
-    {
-      "parameters": {
-        "mode": "mergeByIndex"
-      },
-      "type": "n8n-nodes-base.merge",
-      "typeVersion": 1,
-      "position": [
-        -4336,
-        832
-      ],
-      "id": "e3ebe587-5475-4a18-89ab-3aeb22f57676",
-      "name": "Merge Weather + RP1"
-    },
-    {
-      "parameters": {
-        "mode": "mergeByIndex"
-      },
-      "type": "n8n-nodes-base.merge",
-      "typeVersion": 1,
-      "position": [
-        -4144,
-        960
-      ],
-      "id": "e7af5fbf-aab9-410f-bca2-c5f86b2793a1",
-      "name": "Merge All1"
-    },
-    {
-      "parameters": {
-        "functionCode": "// Build a clean, modern HTML using the merged data.\n// We render a header, metadata section, and a key/value table of all fields.\nconst data = item.json;\nconst now = new Date().toLocaleString('de-DE');\n\n// Helper to escape HTML\nconst esc = (s) => String(s)\n  .replace(/&/g,'&amp;').replace(/</g,'&lt;')\n  .replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/'/g,'&#39;');\n\n// Flatten data (1 level) for table rows\nconst flatten = (obj, prefix = '') => {\n  const rows = [];\n  for (const [k, v] of Object.entries(obj || {})) {\n    const key = prefix ? `${prefix}.${k}` : k;\n    if (v === null || v === undefined) continue;\n    if (typeof v === 'object' && !Array.isArray(v)) {\n      // stringify shallow objects to keep PDF compact\n      rows.push([key, esc(JSON.stringify(v))]);\n    } else {\n      rows.push([key, esc(v)]);\n    }\n  }\n  return rows;\n};\n\nconst rows = flatten(data);\n\nconst html = `<!doctype html>\n<html lang=\"de\">\n<head>\n  <meta charset=\"utf-8\" />\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n  <title>Forstauftrag</title>\n  <style>\n    :root {\n      --bg: #0b0f17;\n      --card: #141a24;\n      --muted: #9fb1c9;\n      --text: #e6edf3;\n      --accent: #4f8cff;\n      --accent-2: #22c55e;\n      --border: #243044;\n    }\n    * { box-sizing: border-box; }\n    body {\n      margin: 0; padding: 32px;\n      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial;\n      background: #fff; color: #111;\n    }\n    .sheet {\n      max-width: 900px; margin: 0 auto; background: #fff;\n    }\n    .header {\n      display: flex; align-items: center; justify-content: space-between;\n      border-bottom: 2px solid #111; padding-bottom: 16px; margin-bottom: 20px;\n    }\n    .brand { font-size: 22px; font-weight: 700; letter-spacing: .3px; }\n    .meta {\n      font-size: 12px; color: #333; text-align: right;\n    }\n    .badges { display: flex; gap: 8px; margin: 4px 0 0; }\n    .badge {\n      font-size: 10px; text-transform: uppercase; letter-spacing: .5px;\n      border: 1px solid #111; padding: 2px 6px; border-radius: 999px;\n    }\n    h2 {\n      font-size: 18px; margin: 24px 0 8px;\n      padding: 0;\n    }\n    .kv {\n      width: 100%; border-collapse: separate; border-spacing: 0;\n      border: 1px solid #111; border-radius: 12px; overflow: hidden;\n    }\n    .kv th, .kv td {\n      padding: 10px 12px; vertical-align: top;\n      border-bottom: 1px solid #1111; \n    }\n    .kv tr:last-child th, .kv tr:last-child td { border-bottom: 0; }\n    .kv th {\n      width: 32%; background: #f6f7f9; text-align: left; font-weight: 600;\n    }\n    .footer {\n      margin-top: 28px; font-size: 11px; color: #444;\n      display: flex; justify-content: space-between; align-items: center;\n    }\n    .sign { border-top: 1px solid #111; width: 240px; height: 42px; }\n    .muted { color: #666; }\n  </style>\n</head>\n<body>\n  <div class=\"sheet\">\n    <div class=\"header\">\n      <div class=\"brand\">Forstauftrag</div>\n      <div class=\"meta\">\n        <div>Erstellt: ${esc(now)}</div>\n        <div class=\"badges\">\n          <div class=\"badge\">Automatisiert</div>\n          <div class=\"badge\">n8n</div>\n        </div>\n      </div>\n    </div>\n\n    <h2>Angaben</h2>\n    <table class=\"kv\">\n      ${rows.map(([k,v]) => `<tr><th>${esc(k)}</th><td>${v}</td></tr>`).join('')}\n    </table>\n\n    <div class=\"footer\">\n      <div class=\"muted\">Generiert durch n8n • Keine Unterschrift erforderlich</div>\n      <div class=\"sign\"></div>\n    </div>\n  </div>\n</body>\n</html>`;\n\nreturn { ...item.json, html };"
-      },
-      "type": "n8n-nodes-base.functionItem",
-      "typeVersion": 1,
-      "position": [
-        -3696,
-        1056
-      ],
-      "id": "442affc2-0e1c-4200-b109-85eb4422c068",
-      "name": "HTML1"
     },
     {
       "parameters": {
@@ -671,6 +428,42 @@
               "parameterType": "formBinaryData",
               "name": "files",
               "inputDataFieldName": "files"
+            },
+            {
+              "name": "headerTemplate",
+              "value": "={{ $json.headerTemplate }}"
+            },
+            {
+              "name": "footerTemplate",
+              "value": "={{ $json.footerTemplate }}"
+            },
+            {
+              "name": "emulatedMediaType",
+              "value": "print"
+            },
+            {
+              "name": "preferCssPageSize",
+              "value": "true"
+            },
+            {
+              "name": "marginTop",
+              "value": "25mm"
+            },
+            {
+              "name": "marginBottom",
+              "value": "25mm"
+            },
+            {
+              "name": "marginLeft",
+              "value": "20mm"
+            },
+            {
+              "name": "marginRight",
+              "value": "20mm"
+            },
+            {
+              "name": "printBackground",
+              "value": "true"
             }
           ]
         },
@@ -686,10 +479,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -3264,
-        960
+        464,
+        576
       ],
-      "id": "1756b691-842b-41d5-80ee-54735931145f",
+      "id": "5eac0e5a-e58f-4e01-b7fb-72f131286b12",
       "name": "HTML → PDF (Gotenberg)1"
     },
     {
@@ -708,10 +501,10 @@
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2,
       "position": [
-        -2832,
-        960
+        912,
+        576
       ],
-      "id": "acd5bec8-e673-4f03-8ae7-77e93fdc6c9e",
+      "id": "693ab469-efe7-4ba2-aa96-31042f815ad9",
       "name": "Send a message1",
       "webhookId": "9e016e9a-d8de-45cc-80a9-cbcef0019843",
       "credentials": {
@@ -1021,6 +814,159 @@
               "display": true,
               "type": "string",
               "canBeUsedToMatch": true
+            },
+            {
+              "id": "Verkehrsrechtliche Anordnung/Einsatz an Straße",
+              "displayName": "Verkehrsrechtliche Anordnung/Einsatz an Straße",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Posten - wie viele Helfer? ",
+              "displayName": "Posten - wie viele Helfer? ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Persönliche Schutzausrüstung geprüft/getragen? ",
+              "displayName": "Persönliche Schutzausrüstung geprüft/getragen? ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Bemerkungen zu Schutzausrüstung: ",
+              "displayName": "Bemerkungen zu Schutzausrüstung: ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Zufahrt für Maschinen möglich? ",
+              "displayName": "Zufahrt für Maschinen möglich? ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Maschintyp",
+              "displayName": "Maschintyp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Maschinenbediener: ",
+              "displayName": "Maschinenbediener: ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Besondere Gefährdungen:",
+              "displayName": "Besondere Gefährdungen:",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Maßnahmen bei besonderer Gefährdung eingeleitet?",
+              "displayName": "Maßnahmen bei besonderer Gefährdung eingeleitet?",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Im Trupp/Arbeitsgruppe  unterwiesen?",
+              "displayName": "Im Trupp/Arbeitsgruppe  unterwiesen?",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Zustimmung:",
+              "displayName": "Zustimmung:",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "submittedAt",
+              "displayName": "submittedAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "weather",
+              "displayName": "weather",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "main",
+              "displayName": "main",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "wind",
+              "displayName": "wind",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "clouds",
+              "displayName": "clouds",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "top_3_rettungspunkte",
+              "displayName": "top_3_rettungspunkte",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
             }
           ],
           "attemptToConvertTypes": false,
@@ -1031,10 +977,10 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        -3680,
-        784
+        16,
+        384
       ],
-      "id": "e5b9b240-09ee-493d-ae47-c6633661feb3",
+      "id": "e3f3cda8-43d7-4ff1-a157-f78b981096e2",
       "name": "Append row in sheet",
       "alwaysOutputData": false,
       "credentials": {
@@ -1043,6 +989,93 @@
           "name": "Google Sheets rusmir-projects"
         }
       }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Sichere Daten + HTML für Gotenberg (self-contained)\nconst d = item.json || {};\nconst now = new Date().toLocaleString('de-DE', { dateStyle: 'medium', timeStyle: 'short' });\n\n// Helper mit Aliassen\nconst pick = (keys, def='—') => {\n  for (const k of keys) {\n    const v = d?.[k];\n    if (v !== undefined && v !== null && String(v) !== '') return v;\n  }\n  return def;\n};\n\n// Firmenangaben\nconst firma = {\n  name: d[\"Firma/Organisation\"] ?? \"Forstauftrag online\",\n  web:  d[\"Firma Website\"] ?? \"forstauftrag.online\",\n  mail: d[\"Firma E-Mail\"] ?? \"info@forstauftrag.online\",\n  tel:  d[\"Firma Telefon\"] ?? \"–\",\n  addr: d[\"Firma Adresse\"] ?? \"–\",\n};\n\n// Logo (DataURL bevorzugt)\nconst uploadLogo = item.binary?.Firmenlogo || item.binary?.logo || item.binary?.jo;\nconst fallbackBinLogo = item.binary?.fallback_logo;\nconst dataUrlFromBin = (bin) => bin ? `data:${bin.mimeType || 'image/png'};base64,${bin.data}` : null;\nconst DEFAULT_LOGO_DATA_URL = null;\nconst logoDataUrl = dataUrlFromBin(uploadLogo) || dataUrlFromBin(fallbackBinLogo) || DEFAULT_LOGO_DATA_URL;\n\n// === MAPPINGS (genau deine Feldnamen + Aliase)\nconst meta = {\n  datum:            pick(['Datum Arbeitstag: ', 'Datum']),\n  einsatzort:       pick(['Einsatzort', 'Ort', 'Einsatz-Ort']),\n  verantwortlicher: pick(['Arbeitsverantwortlicher', 'Verantwortlicher']),\n  weitere:          pick(['weitere Einsatzkräfte:', 'weitere Einsatzkraefte'], '—'),\n  kunde:            pick(['Ansprechpartner Kunde: ', 'Kunde']),\n  kundeTel:         pick(['Kunde Telefon: ', 'Kunde Telefon', 'Telefon'], '—'),\n  ersthelfer:       pick(['Ersthelfer vor Ort: '], '—'),\n  submittedAt:      pick(['submittedAt'], now),\n};\n\nconst sicherheit = {\n  verkehr:           pick(['Verkehrsrechtliche Anordnung/Einsatz an Straße']),\n  absperrung:        pick(['Absperrung']),\n  helfer:            pick(['Posten - wie viele Helfer? ']),\n  psa:               pick(['Persönliche Schutzausrüstung geprüft/getragen? ']),\n  psaNote:           pick(['Bemerkungen zu Schutzausrüstung: ']),\n  zufahrt:           pick(['Zufahrt für Maschinen möglich? ']),\n  maschinen:         Array.isArray(d.Maschintyp) ? d.Maschintyp : (d.Maschintyp ? [d.Maschintyp] : []),\n  maschinenbediener: pick(['Maschinenbediener: '], '—'),\n  gefaehrdungen:     Array.isArray(d['Besondere Gefährdungen:']) ? d['Besondere Gefährdungen:'] : [],\n  massnahmen:        pick(['Maßnahmen bei besonderer Gefährdung eingeleitet?']),\n  unterwiesen:       pick(['Im Trupp/Arbeitsgruppe  unterwiesen?']),\n};\n\n// Wetter (OpenWeatherMap)\nconst wetter = {\n  beschreibung: d.weather?.[0]?.description ?? '—',\n  temp:         d.main?.temp ?? '—',\n  druck:        d.main?.pressure ?? '—',\n  wind:         d.wind?.speed ?? '—',\n  wolken:       d.clouds?.all ?? '—',\n};\n\n// Rettungspunkte + GPS\nconst rp = Array.isArray(d.top_3_rettungspunkte) ? d.top_3_rettungspunkte : [];\nconst gps = {\n  lat: pick(['Standortdaten - latitude (erster Wert in GoogleMaps)', 'lat', 'latitude'], ''),\n  lon: pick(['Standortdaten - longitude (zweiter Wert in GoogleMaps)', 'lon', 'longitude'], ''),\n};\nconst mapsUrl = (gps.lat && gps.lon)\n  ? `https://www.google.com/maps?q=${encodeURIComponent(`${gps.lat},${gps.lon}`)}`\n  : null;\n\n// Helpers\nconst esc = (v) => String(v ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/'/g,'&#039;');\nconst chip = (t) => `<span class=\"chip\">${esc(t)}</span>`;\nconst chips = (arr=[]) => arr.length ? `<div class=\"chips\">${arr.map(chip).join('')}</div>` : '<span class=\"muted\">—</span>';\nconst badge = (t) => `<span class=\"badge\">${esc(t)}</span>`;\nconst badges = (arr=[]) => arr.length ? `<div class=\"badges-list\">${arr.map(badge).join('')}</div>` : '<span class=\"muted\">—</span>';\nconst rpRows = rp.length ? rp.map((p,i)=>`\n  <tr>\n    <td>${i+1}</td>\n    <td><strong>${esc(p.rp_nr)}</strong></td>\n    <td>${esc(p.beschreibung)}</td>\n    <td>${esc(p.bundesland)}</td>\n    <td class=\"num\">${esc(p.entfernung_m)} m</td>\n  </tr>`).join('') :\n  `<tr><td colspan=\"5\" class=\"muted\">Keine Rettungspunkte gefunden.</td></tr>`;\n\n// Header/Footer (Chromium)\nconst headerTemplate = `\n  <style>\n    *{box-sizing:border-box} body{margin:0;font-family:Arial,Helvetica,sans-serif}\n    .h-wrap{background:#B8E6F1; padding:10px 24px; display:flex; align-items:center; justify-content:space-between; font-size:10px;}\n    .h-left{display:flex; align-items:center; gap:12px}\n    .h-left img{width:28px;height:28px;object-fit:contain}\n    .h-title{font-size:14px;font-weight:700}\n    .h-meta{font-size:10px;opacity:.8}\n  </style>\n  <div class=\"h-wrap\">\n    <div class=\"h-left\">\n      ${logoDataUrl ? `<img src=\"${esc(logoDataUrl)}\" alt=\"Logo\"/>` : `<div style=\"width:28px;height:28px;border-radius:4px;background:#fff;\"></div>`}\n      <div>\n        <div class=\"h-title\">${esc(firma.name)}</div>\n        <div class=\"h-meta\">Arbeitsauftrag • ${esc(meta.einsatzort || '—')}</div>\n      </div>\n    </div>\n    <div>\n      <div><b>Datum:</b> ${esc(meta.datum || '—')}</div>\n      <div><b>Erstellt:</b> ${esc(now)}</div>\n    </div>\n  </div>\n`;\n\nconst footerTemplate = `\n  <style>\n    *{box-sizing:border-box} body{margin:0;font-family:Arial,Helvetica,sans-serif}\n    .f-wrap{background:#BFC0C3; padding:8px 24px; display:flex; align-items:center; justify-content:space-between; font-size:9px;}\n    .f-stack{display:flex; gap:16px; align-items:center}\n    .f-stack a:first-child{font-weight:700}\n    .page::after{content: counter(page) \" / \" counter(pages);}\n  </style>\n  <div class=\"f-wrap\">\n    <div class=\"f-stack\">\n      <a>${esc(firma.web)}</a>\n      <a>${esc(firma.mail)}</a>\n      <span>${esc(firma.tel)}</span>\n      <span>${esc(firma.addr)}</span>\n    </div>\n    <div class=\"page\"></div>\n  </div>\n`;\n\n// === Logos als Data-URLs (klein & inline) ===\nconst LOGO_RYZEUP =\n'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA...a3OsjqVrc6yOpWB1nd6iCrW93qIKvbv7/9P7kwWAbzG//hAAAAAElFTkSuQmCC';\n\nconst LOGO_BG =\n'data:image/png;base64,iVBORw0KGgoAAAAN...rnhsxHpXFDzw1+5qes4+tnuK+yGnlEvgbyf74KI2LxKXQSAAAAAElFTkSuQmCC';\n\nconst LOGO_AUFTRAG =\n'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...TGCAgoRKOExhghFDEJP6ZvBQoUKFCgwH/jn+jaYT69zpq7AAAAAElFTkSuQmCC';\n\n// Verbesserter JavaScript Code für das PDF-Layout\n// Dieser Code ersetzt den bestehenden HTML-Generierungsteil in Ihrem n8n Workflow\n\nconst html = `<!doctype html>\n<html lang=\"de\">\n<head>\n<meta charset=\"utf-8\" />\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n<title>Arbeitsauftrag Forstwirtschaft</title>\n<style>\n  :root{\n    --bg: #0c1512;\n    --surface: #12211a;\n    --surface-2: #0e1b15;\n    --card: #12261c;\n    --brand-1: #10b981;      /* Akzentgrün */\n    --brand-2: #34d399;      /* Verlauf */\n    --text: #e6f2ec;         /* Haupttext */\n    --muted: #9fb3aa;        /* Sekundärtext */\n    --border: #1f3a2e;       /* Kartenrahmen */\n    --warn: #f59e0b;\n    --ok: #22c55e;\n    --chip-bg: #0f3326;\n  }\n\n  /* Vollflächig drucken */\n  @page { size: A4; margin: 0; }\n  html, body { height: 100%; }\n  * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }\n\n  body{\n    margin:0; padding:0;\n    background: var(--bg);\n    color: var(--text);\n    font: 12pt/1.45 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;\n  }\n\n  /* Eine A4-Seite mit Innenabstand – keine äußeren Ränder */\n  .page{\n    width: 210mm;\n    min-height: 297mm;\n    margin: 0 auto;\n    background: var(--surface);\n    display: grid;\n    grid-template-rows: auto 1fr auto;\n    padding: 16mm 16mm 14mm 16mm;   /* Innenabstand statt Seitenränder */\n  }\n\n  /* Obere Logozeile */\n  .logos{\n    display:flex; align-items:center; justify-content:flex-start; gap:16mm;\n    margin-bottom: 8mm;\n  }\n  .logos img{\n    height: 14mm; width:auto; display:block;\n    filter: drop-shadow(0 1px 0 rgba(0,0,0,.15));\n  }\n\n  /* Headline-Bar */\n  .header{\n    background: linear-gradient(135deg, var(--brand-1), var(--brand-2));\n    color:#05110d;\n    border-radius: 10px;\n    padding: 10mm 12mm;\n    margin-bottom: 8mm;\n  }\n  .header h1{ margin:0 0 2mm 0; font-size: 20pt; letter-spacing: .2px; }\n  .header .sub{ margin:0; opacity:.85; }\n  .meta{\n    margin-top: 2mm;\n    display:flex; gap:10mm; flex-wrap:wrap;\n    font-size:10pt; color:#052017; font-weight:600;\n  }\n\n  /* Inhalt */\n  .content{ display:block; }\n\n  .card{\n    background: var(--card);\n    border:1px solid var(--border);\n    border-radius:12px;\n    margin: 0 0 6mm 0;\n    overflow:hidden;\n    box-shadow: 0 2px 10px rgba(0,0,0,.18);\n    page-break-inside: avoid;\n    break-inside: avoid-page;\n  }\n  .card .card-h{\n    background: linear-gradient(90deg, #0f2b20, rgba(15,43,32,0));\n    padding: 8mm 10mm 5mm 10mm;\n    font-weight:700; letter-spacing:.3px; border-bottom:1px solid var(--border);\n  }\n  .card .card-b{ padding: 8mm 10mm; }\n\n  .grid{\n    display:grid; grid-template-columns: 1fr 1fr; gap: 6mm 10mm;\n  }\n  .row{ display:flex; flex-direction:column; }\n  .label{ font-size: 9pt; color: var(--muted); text-transform: uppercase; letter-spacing:.35px; margin-bottom:1mm; }\n  .val{ font-size: 11.5pt; font-weight:600; }\n\n  .yes{ color: var(--ok); }\n  .no{ color: var(--warn); }\n\n  .chips{ display:flex; flex-wrap:wrap; gap:4mm; margin-top:2mm; }\n  .chip{\n    background: var(--chip-bg);\n    border:1px solid var(--border);\n    padding: 2.5mm 4mm; border-radius: 999px;\n    font-size:9pt; font-weight:700; color: var(--text);\n  }\n  .chip.hazard{ background:#3b1f0a; border-color:#7a3c11; color:#ffcc88; }\n\n  .weather{\n    display:grid; grid-template-columns: repeat(5, 1fr); gap:6mm; text-align:center;\n  }\n  .wbox{\n    background: var(--surface-2);\n    border:1px solid var(--border); border-radius:10px; padding:6mm 4mm;\n  }\n  .wval{ font-size: 16pt; font-weight:800; color: var(--brand-2); margin-bottom:1mm; }\n  .wlab{ font-size:8.5pt; color: var(--muted); text-transform:uppercase; }\n\n  table.tbl{ width:100%; border-collapse:separate; border-spacing:0; background:var(--surface-2); border:1px solid var(--border); border-radius:10px; overflow:hidden; }\n  .tbl thead th{\n    background:#0f2b20; color:#c9f0e1; text-align:left; padding:4.5mm 5mm; font-size:10pt; border-bottom:1px solid var(--border);\n  }\n  .tbl td{ padding:4.5mm 5mm; border-bottom:1px solid var(--border); }\n  .tbl tr:last-child td{ border-bottom:0; }\n  .td-num{ text-align:right; font-weight:700; color: var(--brand-2); }\n\n  .gps{\n    background: var(--surface-2); border:1px solid var(--border); border-radius:10px; padding:6mm; text-align:center;\n  }\n  .coord{ font: 700 14pt/1.1 \"SFMono-Regular\", ui-monospace, Menlo, Consolas, monospace; color: #8be0b6; margin: 2mm 0 3mm; }\n  .map a{ color: var(--brand-2); text-decoration:none; font-weight:700; }\n  .map a:hover{ text-decoration:underline; }\n\n  .footer{\n    margin-top: 8mm;\n    border-top: 1px solid var(--border);\n    padding-top: 6mm;\n    display:flex; align-items:flex-start; justify-content:space-between; gap:8mm; color: var(--muted); font-size:9.5pt;\n  }\n  .f-left{ max-width: 105mm; }\n  .f-right{ text-align:right; }\n\n  /* Mobile Vorschau */\n  @media screen and (max-width: 900px){\n    .grid{ grid-template-columns:1fr; }\n    .weather{ grid-template-columns: repeat(2, 1fr); }\n  }\n</style>\n</head>\n<body>\n  <div class=\"page\">\n\n    <!-- Logos -->\n    <div class=\"logos\">\n      <img src=\"DATA_URI_RYZEUP\" alt=\"RYZEUP\">\n      <img src=\"DATA_URI_BG\" alt=\"BG\">\n      <img src=\"DATA_URI_AUFTRAG\" alt=\"Auftrag\">\n    </div>\n\n    <!-- Header -->\n    <div class=\"header\">\n      <h1>Arbeitsauftrag Forstwirtschaft</h1>\n      <p class=\"sub\">Einsatzort: ${esc(meta.einsatzort || '—')}</p>\n      <div class=\"meta\">\n        <div><strong>Datum:</strong> ${esc(meta.datum || '—')}</div>\n        <div><strong>Erstellt:</strong> ${esc(now)}</div>\n        <div><strong>Verantwortlich:</strong> ${esc(meta.verantwortlicher || '—')}</div>\n      </div>\n    </div>\n\n    <!-- Inhalt -->\n    <div class=\"content\">\n\n      <div class=\"card\">\n        <div class=\"card-h\">Auftragsdaten</div>\n        <div class=\"card-b\">\n          <div class=\"grid\">\n            <div class=\"row\"><div class=\"label\">Einsatzort</div><div class=\"val\">${esc(meta.einsatzort || '—')}</div></div>\n            <div class=\"row\"><div class=\"label\">Arbeitsverantwortlicher</div><div class=\"val\">${esc(meta.verantwortlicher || '—')}</div></div>\n            <div class=\"row\"><div class=\"label\">Weitere Einsatzkräfte</div><div class=\"val\">${esc(meta.weitere || '—')}</div></div>\n            <div class=\"row\"><div class=\"label\">Ansprechpartner Kunde</div><div class=\"val\">${esc(meta.kunde || '—')}</div></div>\n            <div class=\"row\"><div class=\"label\">Kunde Telefon</div><div class=\"val\">${esc(meta.kundeTel || '—')}</div></div>\n            <div class=\"row\"><div class=\"label\">Ersthelfer vor Ort</div><div class=\"val\">${esc(meta.ersthelfer || '—')}</div></div>\n          </div>\n        </div>\n      </div>\n\n      <div class=\"card\">\n        <div class=\"card-h\">Sicherheit &amp; Organisation</div>\n        <div class=\"card-b\">\n          <div class=\"grid\">\n            <div class=\"row\"><div class=\"label\">Verkehrsrechtliche Anordnung</div><div class=\"val ${sicherheit.verkehr === 'ja' ? 'yes' : 'no'}\">${esc(sicherheit.verkehr)}</div></div>\n            <div class=\"row\"><div class=\"label\">Absperrung</div><div class=\"val\">${esc(sicherheit.absperrung)}</div></div>\n            <div class=\"row\"><div class=\"label\">Posten/Helfer</div><div class=\"val\">${esc(sicherheit.helfer)}</div></div>\n            <div class=\"row\"><div class=\"label\">PSA geprüft/getragen</div><div class=\"val ${sicherheit.psa === 'ja' ? 'yes' : 'no'}\">${esc(sicherheit.psa)}</div></div>\n            <div class=\"row\"><div class=\"label\">Zufahrt für Maschinen</div><div class=\"val ${sicherheit.zufahrt === 'ja' ? 'yes' : 'no'}\">${esc(sicherheit.zufahrt)}</div></div>\n            <div class=\"row\"><div class=\"label\">Maschinenbediener</div><div class=\"val\">${esc(sicherheit.maschinenbediener)}</div></div>\n          </div>\n\n          ${sicherheit.psaNote && sicherheit.psaNote !== '—' ? `\n          <div style=\"margin-top:5mm\">\n            <div class=\"label\">Bemerkungen PSA</div>\n            <div class=\"val\">${esc(sicherheit.psaNote)}</div>\n          </div>` : ''}\n\n          <div style=\"margin-top:6mm\">\n            <div class=\"label\">Maschinentyp(en)</div>\n            <div class=\"chips\">${sicherheit.maschinen.map(m => `<span class=\"chip\">${esc(m)}</span>`).join('')}</div>\n          </div>\n\n          ${sicherheit.gefaehrdungen.length ? `\n          <div style=\"margin-top:6mm\">\n            <div class=\"label\">Besondere Gefährdungen</div>\n            <div class=\"chips\">${sicherheit.gefaehrdungen.map(g => `<span class=\"chip hazard\">${esc(g)}</span>`).join('')}</div>\n          </div>` : ''}\n\n          <div class=\"grid\" style=\"margin-top:6mm\">\n            <div class=\"row\"><div class=\"label\">Maßnahmen bei Gefährdung eingeleitet</div><div class=\"val ${sicherheit.massnahmen === 'ja' ? 'yes' : 'no'}\">${esc(sicherheit.massnahmen)}</div></div>\n            <div class=\"row\"><div class=\"label\">Unterweisung im Trupp</div><div class=\"val ${sicherheit.unterwiesen === 'ja' ? 'yes' : 'no'}\">${esc(sicherheit.unterwiesen)}</div></div>\n          </div>\n        </div>\n      </div>\n\n      <div class=\"card\">\n        <div class=\"card-h\">Wetterbedingungen</div>\n        <div class=\"card-b\">\n          <div class=\"weather\">\n            <div class=\"wbox\"><div class=\"wval\">${esc(wetter.beschreibung)}</div><div class=\"wlab\">Beschreibung</div></div>\n            <div class=\"wbox\"><div class=\"wval\">${esc(wetter.temp)} °C</div><div class=\"wlab\">Temperatur</div></div>\n            <div class=\"wbox\"><div class=\"wval\">${esc(wetter.druck)} hPa</div><div class=\"wlab\">Luftdruck</div></div>\n            <div class=\"wbox\"><div class=\"wval\">${esc(wetter.wind)} m/s</div><div class=\"wlab\">Wind</div></div>\n            <div class=\"wbox\"><div class=\"wval\">${esc(wetter.wolken)} %</div><div class=\"wlab\">Bewölkung</div></div>\n          </div>\n        </div>\n      </div>\n\n      <div class=\"card\">\n        <div class=\"card-h\">Nächste Rettungspunkte</div>\n        <div class=\"card-b\">\n          <table class=\"tbl\">\n            <thead><tr><th>#</th><th>RP-Nummer</th><th>Beschreibung</th><th>Bundesland</th><th style=\"text-align:right\">Entfernung</th></tr></thead>\n            <tbody>\n              ${rp.length ? rp.map((p,i)=>`\n              <tr>\n                <td>${i+1}</td>\n                <td><strong>${esc(p.rp_nr)}</strong></td>\n                <td>${esc(p.beschreibung)}</td>\n                <td>${esc(p.bundesland)}</td>\n                <td class=\"td-num\">${esc(p.entfernung_m)} m</td>\n              </tr>`).join('') :\n              `<tr><td colspan=\"5\" style=\"text-align:center;color:var(--muted);font-style:italic;padding:7mm 0\">Keine Rettungspunkte gefunden</td></tr>`}\n            </tbody>\n          </table>\n        </div>\n      </div>\n\n      <div class=\"card\">\n        <div class=\"card-h\">GPS-Standort</div>\n        <div class=\"card-b\">\n          <div class=\"gps\">\n            <div class=\"label\">Koordinaten</div>\n            <div class=\"coord\">${esc(gps.lat || '—')}, ${esc(gps.lon || '—')}</div>\n            <div class=\"map\">\n              ${mapsUrl ? `<a href=\"${esc(mapsUrl)}\">🗺️ Karte öffnen</a>` : '<span style=\"color:var(--muted)\">Kein Kartenlink verfügbar</span>'}\n            </div>\n          </div>\n        </div>\n      </div>\n    </div>\n\n    <!-- Footer im Body (keine Gotenberg-Header/Footer nötig) -->\n    <div class=\"footer\">\n      <div class=\"f-left\">\n        <div><strong>Ryzeup UG (haftungsbeschränkt)</strong></div>\n        <div>Vertretungsberechtigt: Robin Alexander Riemel</div>\n        <div>Rotthang 3, 84494 Neumarkt-Sankt Veit</div>\n        <div>Amtsgericht Traunstein · HRB 31367</div>\n      </div>\n      <div class=\"f-right\">\n        <div>© 2025 Ryzeup UG (haftungsbeschränkt). All rights reserved.</div>\n        <div>ryzeup.ai · info@ryzeup.ai</div>\n      </div>\n    </div>\n\n  </div>\n</body>\n</html>\n`;\n\n// Rückgabe\nreturn { json: { ...item.json, html, headerTemplate, footerTemplate } };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        16,
+        576
+      ],
+      "id": "c6866465-6fec-4d74-917c-b6e18eaba099",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -208,
+        480
+      ],
+      "id": "d6fd66cf-cbc1-466d-b554-b26a992a80e0",
+      "name": "Merge2"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -432,
+        384
+      ],
+      "id": "cc3e0868-aa3a-4260-a487-ab4ed6451072",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "numberInputs": 3,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -656,
+        240
+      ],
+      "id": "1e3c00cb-8a32-4e36-ae97-cc02bca0586f",
+      "name": "Merge0"
+    },
+    {
+      "parameters": {
+        "jsCode": "const latitude = parseFloat($('Form3').first().json['Standortdaten - latitude (erster Wert in GoogleMaps)']);\nconst longitude = parseFloat($('Form3').first().json['Standortdaten - longitude (zweiter Wert in GoogleMaps)']);\nconst rettungspunkte = $items();\n\nfunction distance(lat1, lon1, lat2, lon2) {\n  const R = 6371e3;\n  const toRad = deg => deg * (Math.PI / 180);\n  const dLat = toRad(lat2 - lat1);\n  const dLon = toRad(lon2 - lon1);\n  const a = Math.sin(dLat / 2) ** 2 +\n            Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *\n            Math.sin(dLon / 2) ** 2;\n  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));\n  return R * c;\n}\n\nconst distanzArray = rettungspunkte.map(punkt => {\n  const dist = distance(latitude, longitude, punkt.json.wgs_breite, punkt.json.wgs_laenge);\n  return {\n    rp_nr: punkt.json.rp_nr,\n    entfernung_m: Math.round(dist),\n    lat: punkt.json.wgs_breite,\n    lon: punkt.json.wgs_laenge,\n    id: punkt.json.id,\n    beschreibung: punkt.json.beschreibung,\n    bundesland: punkt.json.bundesland\n  };\n});\n\nconst top3 = distanzArray.sort((a, b) => a.entfernung_m - b.entfernung_m).slice(0, 3);\n\nreturn [\n  {\n    json: {\n      gps_ursprung: { latitude, longitude },\n      top_3_rettungspunkte: top3\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -432,
+        656
+      ],
+      "id": "c4cb8175-1a86-44f0-91f0-03f183edb61a",
+      "name": "Harvesine"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "if (item.binary && item.binary.data) { item.binary.data.fileName = 'Forstauftrag.pdf'; item.binary.data.mimeType = 'application/pdf'; item.binary.data.fileExtension = 'pdf'; } return item;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        688,
+        576
+      ],
+      "id": "308bfbc1-39d6-4ac3-a536-32939ef2e2d8",
+      "name": "Code3"
     }
   ],
   "pinData": {
@@ -1125,17 +1158,6 @@
     ]
   },
   "connections": {
-    "Code1": {
-      "main": [
-        [
-          {
-            "node": "Send a message1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Move Binary Data (HTML file)": {
       "main": [
         [
@@ -1154,6 +1176,11 @@
             "node": "Form3",
             "type": "main",
             "index": 0
+          },
+          {
+            "node": "Merge0",
+            "type": "main",
+            "index": 1
           }
         ]
       ]
@@ -1163,6 +1190,11 @@
         [
           {
             "node": "Form1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge0",
             "type": "main",
             "index": 0
           }
@@ -1183,9 +1215,9 @@
             "index": 0
           },
           {
-            "node": "Merge All1",
+            "node": "Merge0",
             "type": "main",
-            "index": 0
+            "index": 2
           }
         ]
       ]
@@ -1194,20 +1226,9 @@
       "main": [
         [
           {
-            "node": "Code2",
+            "node": "Harvesine",
             "type": "main",
             "index": 0
-          }
-        ]
-      ]
-    },
-    "Code2": {
-      "main": [
-        [
-          {
-            "node": "Merge Weather + RP1",
-            "type": "main",
-            "index": 1
           }
         ]
       ]
@@ -1216,56 +1237,7 @@
       "main": [
         [
           {
-            "node": "Merge Weather + RP1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Edit Fields1": {
-      "main": [
-        [
-          {
-            "node": "Append row in sheet",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "HTML1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Merge Weather + RP1": {
-      "main": [
-        [
-          {
-            "node": "Merge All1",
-            "type": "main",
-            "index": 1
-          }
-        ]
-      ]
-    },
-    "Merge All1": {
-      "main": [
-        [
-          {
-            "node": "Edit Fields1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "HTML1": {
-      "main": [
-        [
-          {
-            "node": "Move Binary Data (HTML file)",
+            "node": "Merge1",
             "type": "main",
             "index": 0
           }
@@ -1276,7 +1248,78 @@
       "main": [
         [
           {
-            "node": "Code1",
+            "node": "Code3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Move Binary Data (HTML file)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge2": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge0": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Harvesine": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Code3": {
+      "main": [
+        [
+          {
+            "node": "Send a message1",
             "type": "main",
             "index": 0
           }
@@ -1288,11 +1331,11 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "477cf9b1-afdb-4730-ad64-80e316a7c520",
+  "versionId": "9d8570ab-653a-4bb1-8140-1d210ebc3490",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "2a3eab6b88b8510864f912a25810c5ba12780e3df16b467154212c331aaa0bdb"
   },
-  "id": "k96YNnQ923RHQfSp",
+  "id": "4AWkG2MF5QOLgIn6",
   "tags": []
 }
