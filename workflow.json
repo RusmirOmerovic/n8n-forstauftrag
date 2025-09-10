@@ -1070,7 +1070,7 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "if (item.binary && item.binary.data) { item.binary.data.fileName = 'Forstauftrag.pdf'; item.binary.data.mimeType = 'application/pdf'; item.binary.data.fileExtension = 'pdf'; } return item;"
+        "jsCode": "if (item.binary && item.binary.data) { const ort=(item.json['Einsatzort']||item.json['Ort']||'forstauftrag').toString().trim().toLowerCase().replace(/[^a-z0-9]+/g,'-'); const datum=new Date().toISOString().split('T')[0]; item.binary.data.fileName=`${ort}-${datum}.pdf`; item.binary.data.mimeType='application/pdf'; item.binary.data.fileExtension='pdf'; } return item;"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
