@@ -4624,7 +4624,7 @@ const html = `<!doctype html>
     background: var(--surface);
     display: grid;
     grid-template-rows: auto 1fr auto;
-    padding: 16mm;
+    padding: 10px;
     overflow: visible;
     page-break-after: always;
   }
@@ -4668,18 +4668,26 @@ const html = `<!doctype html>
     background: var(--card);
     border:1px solid var(--border);
     border-radius:12px;
-    margin: 7mm 0;
+    margin: 10px 0;
     overflow:hidden;
     box-shadow: 0 8px 24px rgba(0,0,0,.23);
     page-break-inside: avoid;
     break-inside: avoid-page;
   }
   .card .card-h{
-    background: linear-gradient(90deg, #0f2b20, rgba(15,43,32,0));
     padding: 5mm 7mm 4mm;
     font-weight:700; letter-spacing:.3px; border-bottom:1px solid var(--border);
   }
   .card .card-b{ padding: 6mm 7mm; }
+
+  .card[class*='card--']{ border-left:4px solid var(--accent); }
+  .card[class*='card--'] .card-h{ background:var(--accent); color:#05110d; }
+  .card--auftrag{ --accent:#34d399; }
+  .card--sicherheit{ --accent:#f59e0b; }
+  .card--wetter{ --accent:#3b82f6; }
+  .card--rettung{ --accent:#ef4444; }
+  .card--gps{ --accent:#8b5cf6; }
+  .card--zustimmung{ --accent:#10b981; }
 
   .grid{
     display:flex; flex-wrap:wrap; gap: 5mm 8mm;
@@ -4757,7 +4765,7 @@ const html = `<!doctype html>
     <!-- Inhalt -->
     <div class="content">
 
-      <div class="card">
+      <div class="card card--auftrag">
         <div class="card-h">Auftragsdaten</div>
         <div class="card-b">
           <div class="grid">
@@ -4771,7 +4779,7 @@ const html = `<!doctype html>
         </div>
       </div>
 
-      <div class="card">
+      <div class="card card--sicherheit">
         <div class="card-h">Sicherheit &amp; Organisation</div>
         <div class="card-b">
           <div class="grid">
@@ -4813,7 +4821,7 @@ const html = `<!doctype html>
         </div>
       </div>
 
-      <div class="card">
+      <div class="card card--wetter">
         <div class="card-h">Wetterbedingungen</div>
         <div class="card-b">
           <div class="weather">
@@ -4826,7 +4834,7 @@ const html = `<!doctype html>
         </div>
       </div>
 
-      <div class="card">
+      <div class="card card--rettung">
         <div class="card-h">Nächste Rettungspunkte</div>
         <div class="card-b">
           <table class="tbl">
@@ -4849,7 +4857,7 @@ const html = `<!doctype html>
         </div>
       </div>
 
-      <div class="card">
+      <div class="card card--gps">
         <div class="card-h">GPS-Standort</div>
         <div class="card-b">
           <div class="gps">
@@ -4865,7 +4873,7 @@ const html = `<!doctype html>
         </div>
       </div>
 
-      <div class="card">
+      <div class="card card--zustimmung">
         <div class="card-h">Zustimmung</div>
         <div class="card-b">
           <div class="consent">
