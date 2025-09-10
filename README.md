@@ -6,10 +6,6 @@ für Forstaufträge erstellt.
 
 ## Überblick
 
-**Der ursprüngliche Arbeitsauftrag händisch ausgefüllt:**
-
-![](/alt-auftrag.png)
-
 **Workflow mit n8n um neue Eingaben zu automatisieren mit entsprechenden Nodes (Knoten):**
 
 ![](/forstauftrag-workflow.png)
@@ -36,8 +32,9 @@ für Forstaufträge erstellt.
 
 ## Beispiel
 
-![Altes Formular](docs/original-formular.png)
-*Platzhalter für das ursprüngliche, händisch auszufüllende PDF.*
+**Der ursprüngliche Arbeitsauftrag händisch ausgefüllt:**
+
+![](/alt-auftrag.png)
 
 ## Entwicklung
 
