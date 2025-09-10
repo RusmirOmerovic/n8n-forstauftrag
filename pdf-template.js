@@ -4614,7 +4614,7 @@ const html = `<!doctype html>
     margin:0; padding:0;
     background: var(--bg);
     color: var(--text);
-    font: 15pt/1.55 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    font: 11pt/1.55 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
   }
 
   .page{
@@ -4626,7 +4626,6 @@ const html = `<!doctype html>
     grid-template-rows: auto 1fr auto;
     padding: 10px;
     overflow: visible;
-    page-break-after: always;
   }
 
   .logos{
@@ -4636,7 +4635,7 @@ const html = `<!doctype html>
     overflow: hidden;
   }
   .logos img{
-    max-height: 20mm;
+    max-height: 12mm;
     width: auto; height: auto;
     display: block;
     max-width: 100%;
@@ -4647,12 +4646,12 @@ const html = `<!doctype html>
     background: linear-gradient(135deg, var(--brand-1), var(--brand-2));
     color:#05110d;
     border-radius: 10px;
-    padding: 7mm 9mm;
+    padding: 5mm 7mm;
     margin-bottom: 7mm;
   }
   .header h1{
     margin: 0 0 2mm;
-    font-size: 25pt;
+    font-size: 18pt;
     letter-spacing: .2px;
   }
   .header .sub{ margin:0; opacity:.85; }
@@ -4668,7 +4667,7 @@ const html = `<!doctype html>
     background: var(--card);
     border:1px solid var(--border);
     border-radius:12px;
-    margin: 10px 0;
+    margin: 12px 0;
     overflow:hidden;
     box-shadow: 0 8px 24px rgba(0,0,0,.23);
     page-break-inside: avoid;
@@ -4678,7 +4677,7 @@ const html = `<!doctype html>
     padding: 5mm 7mm 4mm;
     font-weight:700; letter-spacing:.3px; border-bottom:1px solid var(--border);
   }
-  .card .card-b{ padding: 6mm 7mm; }
+  .card .card-b{ padding: 4mm 5mm; }
 
   .card[class*='card--']{ border-left:4px solid var(--accent); }
   .card[class*='card--'] .card-h{ background:var(--accent); color:#05110d; }
@@ -4690,10 +4689,10 @@ const html = `<!doctype html>
   .card--zustimmung{ --accent:#10b981; }
 
   .grid{
-    display:flex; flex-wrap:wrap; gap: 5mm 8mm;
+    display:flex; flex-wrap:wrap; gap: 3mm 5mm;
   }
   .row{
-    display:flex; flex-direction:column; flex:1 1 calc(50% - 8mm); min-width:90mm;
+    display:flex; flex-direction:column; flex:1 1 calc(50% - 5mm); min-width:80mm;
   }
 
   .label{ font-size: 10pt; color: var(--muted); text-transform: uppercase; letter-spacing:.35px; margin-bottom:1mm; }
