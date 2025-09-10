@@ -10,6 +10,10 @@ für Forstaufträge erstellt.
 
 ![](/forstauftrag-workflow.png)
 
+**Das neu generierte Formular:**
+
+![](/neu-auftrag.png)
+
 ## Funktionsweise
 
 1. Die Datei `gps-form.html` ermittelt auf Wunsch automatisch die
