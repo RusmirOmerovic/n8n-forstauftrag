@@ -6,7 +6,7 @@ für Forstaufträge erstellt.
 
 ## Überblick
 
-(/forstauftrag-workflow.png)
+![](/forstauftrag-workflow.png)
 
 ## Funktionsweise
 
