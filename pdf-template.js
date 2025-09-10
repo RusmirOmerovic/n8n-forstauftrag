@@ -4622,11 +4622,14 @@ const html = `<!doctype html>
   .page{
     width: 210mm;
     min-height: 297mm;
+    height: 297mm;
     margin: 0 auto;
     background: var(--surface);
     display: grid;
     grid-template-rows: auto 1fr auto;
     padding: 16mm 16mm 14mm 16mm;   /* Innenabstand statt Seitenränder */
+    overflow: hidden;
+    page-break-after: always;
   }
 
   /* Obere Logozeile */
@@ -4635,8 +4638,10 @@ const html = `<!doctype html>
     margin-bottom: 8mm;
   }
   .logos img{
-    height: 14mm; width:auto; display:block;
-    filter: drop-shadow(0 1px 0 rgba(0,0,0,.15));
+    height: 14mm;
+    width: auto;
+    display: block;
+    max-width: 100%;
   }
 
   /* Headline-Bar */
@@ -4676,9 +4681,16 @@ const html = `<!doctype html>
   .card .card-b{ padding: 8mm 10mm; }
 
   .grid{
-    display:grid; grid-template-columns: 1fr 1fr; gap: 6mm 10mm;
+    display:flex;
+    flex-wrap:wrap;
+    gap: 6mm 10mm;
   }
-  .row{ display:flex; flex-direction:column; }
+  .row{
+    display:flex;
+    flex-direction:column;
+    flex:1 1 calc(50% - 10mm);
+    min-width:90mm;
+  }
   .label{ font-size: 9pt; color: var(--muted); text-transform: uppercase; letter-spacing:.35px; margin-bottom:1mm; }
   .val{ font-size: 11.5pt; font-weight:600; }
 
@@ -4735,7 +4747,8 @@ const html = `<!doctype html>
 
   /* Mobile Vorschau */
   @media screen and (max-width: 900px){
-    .grid{ grid-template-columns:1fr; }
+    .grid{ flex-direction:column; }
+    .row{ flex-basis:100%; }
     .weather{ grid-template-columns: repeat(2, 1fr); }
   }
 </style>
