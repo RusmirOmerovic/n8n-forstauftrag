@@ -109,19 +109,30 @@ const headerTemplate = `
 const footerTemplate = `
   <style>
     *{box-sizing:border-box} body{margin:0;font-family:Arial,Helvetica,sans-serif}
-    .f-wrap{background:#BFC0C3; padding:8px 24px; display:flex; align-items:center; justify-content:space-between; font-size:10px;} /* +1 */
-    .f-stack{display:flex; gap:16px; align-items:center}
-    .f-stack a:first-child{font-weight:700}
+    .f-wrap{background:#112240;color:#fff;padding:8px 24px;font-size:8px;}
+    .f-legal{line-height:1.4}
+    .f-links{display:flex;gap:16px;margin-top:4px}
+    .f-links a{text-decoration:none;color:#fff}
+    .f-bottom{display:flex;justify-content:space-between;align-items:center;margin-top:4px;font-size:7px}
     .page::after{content: counter(page) " / " counter(pages);}
   </style>
   <div class="f-wrap">
-    <div class="f-stack">
-      <a>${esc(firma.web)}</a>
-      <a>${esc(firma.mail)}</a>
-      <span>${esc(firma.tel)}</span>
-      <span>${esc(firma.addr)}</span>
+    <div class="f-legal">
+      <div>Ryzeup UG (haftungsbeschränkt)</div>
+      <div>Vertretungsberechtigt: Robin Alexander Riemel</div>
+      <div>Rotthang 3, 84494 Neumarkt-Sankt Veit</div>
+      <div>Amtsgericht Traunstein | HRB 33167</div>
     </div>
-    <div class="page"></div>
+    <div class="f-links">
+      <a>Kontakt</a>
+      <a>About</a>
+      <a>Termin Buchen</a>
+      <a>Datenschutz</a>
+    </div>
+    <div class="f-bottom">
+      <div>© 2023 Ryzeup UG (Haftungsbeschränkt). All Rights Reserved.</div>
+      <div class="page"></div>
+    </div>
   </div>
 `;
 
