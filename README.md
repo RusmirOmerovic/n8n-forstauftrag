@@ -6,7 +6,7 @@ für Forstaufträge erstellt.
 
 ## Überblick
 
-![Workflow-Übersicht](/workflow.png)
+![Workflow-Übersicht](/forstauftrag-workflow.png)
 *Platzhalter für einen Screenshot des gesamten Workflows mit allen Nodes.*
 
 ## Funktionsweise
