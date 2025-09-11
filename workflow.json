@@ -443,7 +443,7 @@
             },
             {
               "name": "footer",
-              "value": "={{ $json.footerTemplate }}"
+              "value": "={{ $json.footerTemplate || `<style>body{margin:0;font-family:Arial,Helvetica,sans-serif}.f{font-size:8.5px;padding:6px 18px;background:#112240;color:#fff;display:flex;justify-content:space-between;align-items:center}.num{white-space:nowrap}</style><div class='f'><div>© ${new Date().getFullYear()} Ryzeup UG. Alle Rechte vorbehalten.</div><div class='num'><span class='pageNumber'></span>/<span class='totalPages'></span></div></div>` }}"
             },
             {
               "name": "emulatedMediaType",

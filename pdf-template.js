@@ -73,7 +73,7 @@ const chips = (arr=[]) => arr.length ? `<div class="chips">${arr.map(chip).join(
 let headerTemplate;
 
 // Footer (Seitenfuß im Seitenrand): Rechtliches + Seitenzahlen
-footerTemplate = `
+let footerTemplate = `
   <style>
     *{box-sizing:border-box}
     body{margin:0; font-family: Arial, Helvetica, sans-serif}
