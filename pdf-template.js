@@ -1,11 +1,12 @@
 // Forstauftrag PDF-Generator (Gotenberg/Chromium)
 // 1) Liest n8n-Itemdaten (Form + Zusatzdaten)
-// 2) Erzeugt Header/Footer (Chromium-Seitenränder) und kompaktes HTML
+// 2) Erzeugt Header/Footer (Chromium-Seitenränder) und HTML
 // 3) Gotenberg rendert PDF inkl. Header/Footer auf jeder Seite
+
 const d = item.json || {};
 const now = new Date().toLocaleString('de-DE', { dateStyle: 'medium', timeStyle: 'short' });
 
-// Helper mit Aliassen – liefert den ersten gesetzten Wert
+// Helper: ersten gesetzten Wert liefern
 const pick = (keys, def='—') => {
   for (const k of keys) {
     const v = d?.[k];
@@ -21,16 +22,16 @@ const THEME = {
   bodyFont:   'Arial, Helvetica, sans-serif',
   fontSizeH:  9,     // Header font size (px)
   fontSizeF:  8.5,   // Footer font size (px)
-  padH:       '6px 24px',   // Header padding
-  padF:       '8px 24px',   // Footer padding
+  padH:       '6px 24px',
+  padF:       '8px 24px',
   linkGap:    '16px',
   borderTopF: '1px solid rgba(255,255,255,.08)',
-  // Optional: Logo (Base64) – könnt ihr später befüllen
-  logoLeft:   '',  // z.B. data:image/png;base64,....
-  logoRight:  ''
+  // Optional: Logos (Base64 oder URL)
+  logoLeft:   '/* HIER LOGO-LINKS ALS data:image/png;base64,... ODER URL EINSETZEN */',
+  logoRight:  '/* HIER LOGO-RECHTS ALS data:image/png;base64,... ODER URL EINSETZEN */',
 };
 
-// Kleinformatierte Helper für HTML in Header/Footer:
+// Header/Footer CSS
 const hcss = `
   *{box-sizing:border-box} body{margin:0; font-family:${THEME.bodyFont}}
   .wrap{padding:${THEME.padH}; font-size:${THEME.fontSizeH}px; line-height:1.35; width:100%}
@@ -39,7 +40,6 @@ const hcss = `
   .logos{display:flex; align-items:center; gap:12px}
   img{height:14px}
 `;
-
 const fcss = `
   *{box-sizing:border-box} body{margin:0; font-family:${THEME.bodyFont}}
   .wrap{background:${THEME.brandBg}; color:${THEME.brandText}; padding:${THEME.padF};
@@ -51,9 +51,7 @@ const fcss = `
   img{height:14px; filter: brightness(0) invert(1)}
 `;
 
-// Hinweis: Firmen-/Logo-Upload entfernt – Header nutzt feste 3 Logos (Ryzeup/BG/Auftrag)
-
-// === MAPPINGS (genau deine Feldnamen + Aliase) ===
+// === Feld-Mappings (deine Original-Feldnamen inkl. Aliase) ===
 const meta = {
   datum:            pick(['Datum Arbeitstag: ', 'Datum']),
   einsatzort:       pick(['Einsatzort', 'Ort', 'Einsatz-Ort']),
@@ -72,6 +70,7 @@ const sicherheit = {
   psa:               pick(['Persönliche Schutzausrüstung geprüft/getragen? ']),
   psaNote:           pick(['Bemerkungen zu Schutzausrüstung: ']),
   zufahrt:           pick(['Zufahrt für Maschinen möglich? ']),
+  // Falls der Form-Key abweicht, hier anpassen:
   maschinen:         Array.isArray(d.Maschintyp) ? d.Maschintyp : (d.Maschintyp ? [d.Maschintyp] : []),
   maschinenbediener: pick(['Maschinenbediener: '], '—'),
   gefaehrdungen:     Array.isArray(d['Besondere Gefährdungen:']) ? d['Besondere Gefährdungen:'] : [],
@@ -79,8 +78,10 @@ const sicherheit = {
   unterwiesen:       pick(['Im Trupp/Arbeitsgruppe  unterwiesen?']),
 };
 
-// Zustimmung / Unterschrift-Ersatz (vereinfachte Darstellung)
-const zustimmung = Array.isArray(d['Zustimmung:']) ? d['Zustimmung:'].join(', ') : pick(['Zustimmung:', 'Zustimmung'], '—');
+// Zustimmung
+const zustimmung = Array.isArray(d['Zustimmung:'])
+  ? d['Zustimmung:'].join(', ')
+  : pick(['Zustimmung:', 'Zustimmung'], '—');
 
 // Wetter (OpenWeatherMap)
 const wetter = {
@@ -91,7 +92,7 @@ const wetter = {
   wolken:       d.clouds?.all ?? '—',
 };
 
-// Rettungspunkte + GPS
+// Rettungspunkte & GPS
 const rp = Array.isArray(d.top_3_rettungspunkte) ? d.top_3_rettungspunkte : [];
 const gps = {
   lat: pick(['Standortdaten - latitude (erster Wert in GoogleMaps)', 'lat', 'latitude'], ''),
@@ -101,10 +102,19 @@ const mapsUrl = (gps.lat && gps.lon)
   ? `https://www.google.com/maps?q=${encodeURIComponent(`${gps.lat},${gps.lon}`)}`
   : null;
 
-// Helpers (HTML-Encode + kleine UI-Bausteine)
-const esc = (v) => String(v ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
-const chip = (t) => `<span class="chip">${esc(t)}</span>`;
-const chips = (arr=[]) => arr.length ? `<div class="chips">${arr.map(chip).join('')}</div>` : '<span class="muted">—</
+// === HTML-Helper ===
+const esc = (v) => String(v ?? '')
+  .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+  .replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+
+const chip  = (t) => `<span class="chip">${esc(t)}</span>`;
+
+// FIX: war abgeschnitten → jetzt korrekt geschlossen
+const chips = (arr = []) => (
+  arr.length
+    ? `<div class="chips">${arr.map(chip).join('')}</div>`
+    : '<span class="muted">—</span>'
+);
 
 // === Logos als Data-URLs (klein & inline) ===
 const LOGO_RYZEUP = 'data:image/png;base64,' +
@@ -4562,11 +4572,7 @@ const LOGO_AUFTRAG = 'data:image/png;base64,' +
   'CEAAAhCAAAQgAAEIQAACEIBARwL/H/NpXxCLeoZLAAAAAElFTkSuQmCC' +
   '';
 
-
-
-
-// JavaScript Code für das PDF-Layout (body)
-
+// === BODY HTML ===
 const html = `<!doctype html>
 <html lang="de">
 <head>
@@ -4575,88 +4581,36 @@ const html = `<!doctype html>
 <title>Arbeitsauftrag Forstwirtschaft</title>
 <style>
   :root{
-    --bg: #0c1512;
-    --surface: #12211a;
-    --surface-2: #0e1b15;
-    --card: #12261c;
-    --brand-1: #10b981;
-    --brand-2: #34d399;
-    --text: #e6f2ec;
-    --muted: #9fb3aa;
-    --border: #1f3a2e;
-    --warn: #f59e0b;
-    --ok: #22c55e;
-    --chip-bg: #0f3326;
-/* Platz für Header (oben) und Footer (unten) im Seitenrand lassen */
-    --top-gap: 24mm;
-    --bottom-gap: 30mm;
+    --bg:#0c1512; --surface:#12211a; --surface-2:#0e1b15; --card:#12261c;
+    --brand-1:#10b981; --brand-2:#34d399; --text:#e6f2ec; --muted:#9fb3aa;
+    --border:#1f3a2e; --warn:#f59e0b; --ok:#22c55e; --chip-bg:#0f3326;
+    /* Platz im Body – unabhängig von Chromium-Header/Footer */
+    --top-gap: 24mm; --bottom-gap: 30mm;
   }
-
-  /* Druckeinstellungen */
-  @page { size: A4; margin: 0; }
-  html, body { height: 100%; }
-  * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-
+  @page { size:A4; margin:0; }
+  html, body { height:100%; }
+  * { box-sizing:border-box; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
   body{
-    margin:0; padding:0;
-    background: var(--bg);
-    color: var(--text);
-    font: 11pt/1.55 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    margin:0; background:var(--bg); color:var(--text);
+    font: 11pt/1.55 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
   }
-
   .page{
-    width: 210mm;
-    min-height: 297mm;
-    margin: auto;
-    background: var(--surface);
-    display: grid;
-    grid-template-rows: auto 1fr auto;
-    padding-top: var(--top-gap);
-    padding-bottom: var(--bottom-gap);
-    padding-left: 20px;
-    padding-right: 20px;
-    overflow: visible;
+    width:210mm; min-height:297mm; margin:auto; background:var(--surface);
+    display:grid; grid-template-rows:auto 1fr auto;
+    padding: var(--top-gap) 20px var(--bottom-gap);
   }
-  /* Body-Logos entfernt – Logos sind im Header-Template (Seitenrand) enthalten */
-
-
   .header{
     background: linear-gradient(135deg, var(--brand-1), var(--brand-2));
-    color:#05110d;
-    border-radius: 10px;
-    padding: 5mm 7mm;
-    margin-bottom: 7mm;
+    color:#05110d; border-radius:10px; padding:5mm 7mm; margin-bottom:7mm;
   }
-  .header h1{
-    margin: 0 0 2mm;
-    font-size: 18pt;
-    letter-spacing: .2px;
-  }
+  .header h1{ margin:0 0 2mm; font-size:18pt; letter-spacing:.2px; }
   .header .sub{ margin:0; opacity:.85; }
-  .meta{
-    margin-top: 2mm;
-    display:flex; gap:6mm; flex-wrap:wrap;
-    font-size:10pt; color:#052017; font-weight:600;
-  }
-
+  .meta{ margin-top:2mm; display:flex; gap:6mm; flex-wrap:wrap; font-size:10pt; color:#052017; font-weight:600; }
   .content{ display:block; }
-
-  .card{
-    background: var(--card);
-    border:1px solid var(--border);
-    border-radius:12px;
-    margin: 12px 0;
-    overflow:hidden;
-    box-shadow: 0 8px 24px rgba(0,0,0,.23);
-    page-break-inside: avoid;
-    break-inside: avoid-page;
-  }
-  .card .card-h{
-    padding: 5mm 7mm 4mm;
-    font-weight:700; letter-spacing:.3px; border-bottom:1px solid var(--border);
-  }
-  .card .card-b{ padding: 4mm 5mm; }
-
+  .card{ background:var(--card); border:1px solid var(--border); border-radius:12px; margin:12px 0;
+         overflow:hidden; box-shadow:0 8px 24px rgba(0,0,0,.23); page-break-inside:avoid; break-inside:avoid-page; }
+  .card .card-h{ padding:5mm 7mm 4mm; font-weight:700; letter-spacing:.3px; border-bottom:1px solid var(--border); }
+  .card .card-b{ padding:4mm 5mm; }
   .card[class*='card--']{ border-left:4px solid var(--accent); }
   .card[class*='card--'] .card-h{ background:var(--accent); color:#05110d; }
   .card--auftrag{ --accent:#34d399; }
@@ -4665,53 +4619,32 @@ const html = `<!doctype html>
   .card--rettung{ --accent:#ef4444; }
   .card--gps{ --accent:#8b5cf6; }
   .card--zustimmung{ --accent:#10b981; }
-
-  .grid{
-    display:flex; flex-wrap:wrap; gap: 3mm 5mm;
-  }
-  .row{
-    display:flex; flex-direction:column; flex:1 1 calc(50% - 5mm); min-width:80mm;
-  }
-
-  .label{ font-size: 10pt; color: var(--muted); text-transform: uppercase; letter-spacing:.35px; margin-bottom:1mm; }
-  .val{ font-size: 13pt; font-weight:600; }
-
-  .yes{ color: var(--ok); }
-  .no{ color: var(--warn); }
-
+  .grid{ display:flex; flex-wrap:wrap; gap:3mm 5mm; }
+  .row{ display:flex; flex-direction:column; flex:1 1 calc(50% - 5mm); min-width:80mm; }
+  .label{ font-size:10pt; color:var(--muted); text-transform:uppercase; letter-spacing:.35px; margin-bottom:1mm; }
+  .val{ font-size:13pt; font-weight:600; }
+  .yes{ color:var(--ok); } .no{ color:var(--warn); }
   .chips{ display:flex; flex-wrap:wrap; gap:4mm; margin-top:2mm; }
-  .chip{
-    background: var(--chip-bg);
-    border:1px solid var(--border);
-    padding: 2.5mm 4mm; border-radius: 999px;
-    font-size:9.5pt; font-weight:700; color: var(--text);
-  }
+  .chip{ background:var(--chip-bg); border:1px solid var(--border); padding:2.5mm 4mm; border-radius:999px; font-size:9.5pt; font-weight:700; color:var(--text); }
   .chip.hazard{ background:#3b1f0a; border-color:#7a3c11; color:#ffcc88; }
-
-  .weather{ display:grid; grid-template-columns: repeat(5, 1fr); gap:6mm; text-align:center; }
-  .wbox{ background: var(--surface-2); border:1px solid var(--border); border-radius:10px; padding:6mm 4mm; }
-  .wval{ font-size: 16pt; font-weight:800; color: var(--brand-2); margin-bottom:1mm; }
-  .wlab{ font-size:8.5pt; color: var(--muted); text-transform:uppercase; }
-
+  .weather{ display:grid; grid-template-columns:repeat(5,1fr); gap:6mm; text-align:center; }
+  .wbox{ background:var(--surface-2); border:1px solid var(--border); border-radius:10px; padding:6mm 4mm; }
+  .wval{ font-size:16pt; font-weight:800; color:var(--brand-2); margin-bottom:1mm; }
+  .wlab{ font-size:8.5pt; color:var(--muted); text-transform:uppercase; }
   table.tbl{ width:100%; border-collapse:separate; border-spacing:0; background:var(--surface-2); border:1px solid var(--border); border-radius:10px; overflow:hidden; }
-  .tbl thead th{
-    background:#0f2b20; color:#c9f0e1; text-align:left; padding:4.5mm 5mm; font-size:10pt; border-bottom:1px solid var(--border);
-  }
+  .tbl thead th{ background:#0f2b20; color:#c9f0e1; text-align:left; padding:4.5mm 5mm; font-size:10pt; border-bottom:1px solid var(--border); }
   .tbl td{ padding:4mm 5mm; border-bottom:1px solid var(--border); }
   .tbl tr:last-child td{ border-bottom:0; }
-  .td-num{ text-align:right; font-weight:700; color: var(--brand-2); }
-
-  .gps{ background: var(--surface-2); border:1px solid var(--border); border-radius:10px; padding:6mm; text-align:center; }
-  .coord{ font: 700 14pt/1.1 ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; color: #8be0b6; margin: 2mm 0 3mm; }
-  .map a{ color: var(--brand-2); text-decoration:none; font-weight:700; }
+  .td-num{ text-align:right; font-weight:700; color:var(--brand-2); }
+  .gps{ background:var(--surface-2); border:1px solid var(--border); border-radius:10px; padding:6mm; text-align:center; }
+  .coord{ font:700 14pt/1.1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color:#8be0b6; margin:2mm 0 3mm; }
+  .map a{ color:var(--brand-2); text-decoration:none; font-weight:700; }
   .map a:hover{ text-decoration:underline; }
-
   .consent{ display:flex; align-items:center; gap:4mm; }
-  .consent-check{ font-size:14pt; color: var(--brand-2); }
+  .consent-check{ font-size:14pt; color:var(--brand-2); }
   .consent-text{ font-size:10.5pt; line-height:1.4; }
-  .consent-note{ margin-top:4mm; font-size:9pt; color: var(--muted); }
-
-  @media screen and (max-width: 900px){
+  .consent-note{ margin-top:4mm; font-size:9pt; color:var(--muted); }
+  @media screen and (max-width:900px){
     .grid{ flex-direction:column; }
     .row{ flex-basis:100%; }
     .weather{ grid-template-columns: repeat(2, 1fr); }
@@ -4720,8 +4653,7 @@ const html = `<!doctype html>
 </head>
 <body>
   <div class="page">
-
-    <!-- Header -->
+    <!-- Body-Header (ästhetischer Kasten, unabhängig vom Chromium-Header) -->
     <div class="header">
       <h1>Arbeitsauftrag Forstwirtschaft</h1>
       <p class="sub">Einsatzort: ${esc(meta.einsatzort || '—')}</p>
@@ -4762,26 +4694,24 @@ const html = `<!doctype html>
           </div>
 
           ${ (sicherheit.psaNote && sicherheit.psaNote !== '—')
-            ? '<div style="margin-top:5mm">'
+              ? '<div style="margin-top:5mm">'
                 + '<div class="label">Bemerkungen PSA</div>'
                 + '<div class="val">' + esc(sicherheit.psaNote) + '</div>'
               + '</div>'
-            : ''
+              : ''
           }
 
           <div style="margin-top:6mm">
             <div class="label">Maschinentyp(en)</div>
-            <div class="chips">${sicherheit.maschinen.map(m => '<span class="chip">' + esc(m) + '</span>').join('')}</div>
+            ${chips(sicherheit.maschinen)}
           </div>
 
           ${ sicherheit.gefaehrdungen.length
-            ? '<div style="margin-top:6mm">'
+              ? '<div style="margin-top:6mm">'
                 + '<div class="label">Besondere Gefährdungen</div>'
-                + '<div class="chips">'
-                  + sicherheit.gefaehrdungen.map(g => '<span class="chip hazard">' + esc(g) + '</span>').join('')
-                + '</div>'
+                + chips(sicherheit.gefaehrdungen.map(g => `⚠️ ${g}`))
               + '</div>'
-            : ''
+              : ''
           }
 
           <div class="grid" style="margin-top:6mm">
@@ -4810,17 +4740,18 @@ const html = `<!doctype html>
           <table class="tbl">
             <thead><tr><th>#</th><th>RP-Nummer</th><th>Beschreibung</th><th>Bundesland</th><th style="text-align:right">Entfernung</th></tr></thead>
             <tbody>
-              ${ rp.length
-                ? rp.map((p,i) =>
-                    '<tr>'
-                      + '<td>' + (i+1) + '</td>'
-                      + '<td><strong>' + esc(p.rp_nr) + '</strong></td>'
-                      + '<td>' + esc(p.beschreibung) + '</td>'
-                      + '<td>' + esc(p.bundesland) + '</td>'
-                      + '<td class="td-num">' + esc(p.entfernung_m) + ' m</td>'
-                    + '</tr>'
-                  ).join('')
-                : '<tr><td colspan="5" style="text-align:center;color:var(--muted);font-style:italic;padding:7mm 0">Keine Rettungspunkte gefunden</td></tr>'
+              ${
+                rp.length
+                  ? rp.map((p,i) =>
+                      '<tr>'
+                        + '<td>' + (i+1) + '</td>'
+                        + '<td><strong>' + esc(p.rp_nr) + '</strong></td>'
+                        + '<td>' + esc(p.beschreibung) + '</td>'
+                        + '<td>' + esc(p.bundesland) + '</td>'
+                        + '<td class="td-num">' + esc(p.entfernung_m) + ' m</td>'
+                      + '</tr>'
+                    ).join('')
+                  : '<tr><td colspan="5" style="text-align:center;color:var(--muted);font-style:italic;padding:7mm 0">Keine Rettungspunkte gefunden</td></tr>'
               }
             </tbody>
           </table>
@@ -4834,9 +4765,10 @@ const html = `<!doctype html>
             <div class="label">Koordinaten</div>
             <div class="coord">${esc(gps.lat || '—')}, ${esc(gps.lon || '—')}</div>
             <div class="map">
-              ${ mapsUrl
-                ? '<a href="' + esc(mapsUrl) + '">🗺️ Karte öffnen</a>'
-                : '<span style="color:var(--muted)">Kein Kartenlink verfügbar</span>'
+              ${
+                mapsUrl
+                  ? '<a href="' + esc(mapsUrl) + '">🗺️ Karte öffnen</a>'
+                  : '<span style="color:var(--muted)">Kein Kartenlink verfügbar</span>'
               }
             </div>
           </div>
@@ -4860,7 +4792,8 @@ const html = `<!doctype html>
 </html>
 `;
 
-// === HEADER ===
+// === CHROMIUM HEADER (separate Vorlage für Gotenberg) ===
+// FIX: meta.einsatzort verwenden
 const headerTemplate = `
   <style>${hcss}</style>
   <div class="wrap">
@@ -4869,12 +4802,12 @@ const headerTemplate = `
         ${THEME.logoLeft ? `<img src="${THEME.logoLeft}" alt="Logo"/>` : ''}
         <strong>Arbeitsauftrag</strong>
       </div>
-      <div class="muted">${esc(einsatzort || '—')} · ${esc(now)}</div>
+      <div class="muted">${esc(meta.einsatzort || '—')} · ${esc(now)}</div>
     </div>
   </div>
 `;
 
-// === FOOTER ===
+// === CHROMIUM FOOTER ===
 const footerTemplate = `
   <style>${fcss}</style>
   <div class="wrap">
@@ -4896,5 +4829,26 @@ const footerTemplate = `
   </div>
 `;
 
-// Rückgabe
-return { json: { ...item.json, html, headerTemplate, footerTemplate } };
+// === EMPFOHLENE DRUCK-RÄNDER FÜR Gotenberg/Chromium ===
+// Diese Werte musst du beim HTTP Request mitgeben (siehe unten).
+const printOptions = {
+  paperWidth:  8.27,  // A4 in Inch
+  paperHeight: 11.69, // A4 in Inch
+  marginTop:    0.6,  // ~15 mm
+  marginBottom: 0.6,  // ~15 mm
+  marginLeft:   0.39, // 10 mm
+  marginRight:  0.39, // 10 mm
+  printBackground: true,
+  scale: 1,
+};
+
+// Rückgabe ans nächste Node
+return {
+  json: {
+    ...item.json,
+    html,
+    headerTemplate,
+    footerTemplate,
+    printOptions
+  }
+};
