@@ -73,32 +73,35 @@ const chips = (arr=[]) => arr.length ? `<div class="chips">${arr.map(chip).join(
 let headerTemplate;
 
 // Footer (Seitenfuß im Seitenrand): Rechtliches + Seitenzahlen
-const footerTemplate = `
+footerTemplate = `
   <style>
-    *{box-sizing:border-box} body{margin:0;font-family:Arial,Helvetica,sans-serif}
-    .f-wrap{background:#112240;color:#fff;padding:8px 24px;font-size:8px;}
-    .f-legal{line-height:1.4}
-    .f-links{display:flex;gap:16px;margin-top:4px}
-    .f-links a{text-decoration:none;color:#fff}
-    .f-bottom{display:flex;justify-content:space-between;align-items:center;margin-top:4px;font-size:7px}
+    *{box-sizing:border-box}
+    body{margin:0; font-family: Arial, Helvetica, sans-serif}
+    .f-wrap{
+      background:#112240; color:#fff;
+      padding:8px 24px;
+      font-size:8.5px; line-height:1.35;
+      border-top:1px solid rgba(255,255,255,.08);
+    }
+    .f-row{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px}
+    .f-col{display:flex; gap:16px; align-items:center; flex-wrap:wrap}
+    a{color:#fff; text-decoration:none}
     .num{white-space:nowrap}
   </style>
   <div class="f-wrap">
-    <div class="f-legal">
-      <div>Ryzeup UG (haftungsbeschränkt)</div>
-      <div>Vertretungsberechtigt: Robin Alexander Riemel</div>
-      <div>Rotthang 3, 84494 Neumarkt-Sankt Veit</div>
-      <div>Amtsgericht Traunstein | HRB 33167</div>
+    <div class="f-row">
+      <div class="f-col">
+        <strong>Ryzeup UG (haftungsbeschränkt)</strong>
+        <span>Rotthang 3, 84494 Neumarkt-Sankt Veit</span>
+        <span>HRB 33167, AG Traunstein</span>
+      </div>
+      <div class="f-col">
+        <a>Kontakt</a><a>About</a><a>Termin</a><a>Datenschutz</a>
+        <span class="num"><span class="pageNumber"></span>/<span class="totalPages"></span></span>
+      </div>
     </div>
-    <div class="f-links">
-      <a>Kontakt</a>
-      <a>About</a>
-      <a>Termin Buchen</a>
-      <a>Datenschutz</a>
-    </div>
-    <div class="f-bottom">
-      <div>© 2023 Ryzeup UG (Haftungsbeschränkt). All Rights Reserved.</div>
-      <div class="num"><span class="pageNumber"></span> / <span class="totalPages"></span></div>
+    <div class="f-row" style="margin-top:4px">
+      <div>© ${new Date().getFullYear()} Ryzeup UG. Alle Rechte vorbehalten.</div>
     </div>
   </div>
 `;
@@ -4562,22 +4565,32 @@ const LOGO_AUFTRAG = 'data:image/png;base64,' +
 // Neuer Header nach Logos: 3 Logos + Meta
 headerTemplate = `
   <style>
-    *{box-sizing:border-box} body{margin:0;font-family:Arial,Helvetica,sans-serif}
-    .h-wrap{background:#B8E6F1; padding:10px 24px; display:flex; align-items:center; justify-content:space-between; font-size:11px}
-    .h-logos{display:flex; align-items:center; gap:12px}
-    .h-logos img{width:auto; max-height:22px; object-fit:contain}
-    .h-title{font-size:14px;font-weight:700}
-    .h-meta{font-size:11px;opacity:.85}
+    *{box-sizing:border-box}
+    body{margin:0; font-family: Arial, Helvetica, sans-serif}
+    .h-wrap{
+      display:flex; align-items:center; justify-content:space-between;
+      padding:8px 18px;
+      background:#B8E6F1;
+      border-bottom:1px solid rgba(0,0,0,.06);
+      font-size:11px;
+    }
+    .h-logos{display:flex; align-items:center; gap:12px; min-width:0}
+    .h-logos img{
+      display:inline-block; width:auto; max-height:28px; object-fit:contain;
+    }
+    .h-right{display:flex; align-items:center; gap:12px; flex-wrap:wrap; min-width:0}
+    .h-title{font-weight:700; white-space:nowrap}
+    .h-meta{opacity:.85; white-space:nowrap}
   </style>
   <div class="h-wrap">
     <div class="h-logos">
-      <img src="${LOGO_RYZEUP}" alt="Ryzeup" />
-      <img src="${LOGO_BG}" alt="BG" />
-      <img src="${LOGO_AUFTRAG}" alt="Auftrag" />
+      <img src="${LOGO_RYZEUP}" alt="Ryzeup"/>
+      <img src="${LOGO_BG}" alt="BG"/>
+      <img src="${LOGO_AUFTRAG}" alt="Auftrag"/>
     </div>
-    <div>
-      <div class="h-title">Arbeitsauftrag Forstwirtschaft</div>
-      <div class="h-meta">Einsatzort: ${esc(meta.einsatzort || '—')} • Datum: ${esc(meta.datum || '—')} • Erstellt: ${esc(now)}</div>
+    <div class="h-right">
+      <span class="h-title">Arbeitsauftrag Forstwirtschaft</span>
+      <span class="h-meta">Einsatzort: ${esc(meta.einsatzort || '—')} • Datum: ${esc(meta.datum || '—')} • Erstellt: ${esc(now)}</span>
     </div>
   </div>
 `;
@@ -4606,10 +4619,13 @@ const html = `<!doctype html>
     --warn: #f59e0b;
     --ok: #22c55e;
     --chip-bg: #0f3326;
+/* Platz für Header (oben) und Footer (unten) im Seitenrand lassen */
+    --top-gap: 20mm;
+    --bottom-gap: 28mm;
   }
 
-  /* Platz für Header (oben) und Footer (unten) im Seitenrand lassen */
-  @page { size: A4; margin: 15mm 20mm 35mm 20mm; }
+  /* Druckeinstellungen */
+  @page { size: A4; margin: 0; }
   html, body { height: 100%; }
   * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 
@@ -4623,11 +4639,14 @@ const html = `<!doctype html>
   .page{
     width: 210mm;
     min-height: 297mm;
-    margin: 0 auto;
+    margin: auto;
     background: var(--surface);
     display: grid;
     grid-template-rows: auto 1fr auto;
-    padding: 10px;
+    padding-top: var(--top-gap);
+    padding-bottom: var(--bottom-gap);
+    padding-left: 20px;
+    padding-right: 20px;
     overflow: visible;
   }
   /* Body-Logos entfernt – Logos sind im Header-Template (Seitenrand) enthalten */
