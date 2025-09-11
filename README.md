@@ -8,11 +8,11 @@ für Forstaufträge erstellt.
 
 **Workflow mit n8n um neue Eingaben zu automatisieren mit entsprechenden Nodes (Knoten):**
 
-![](/forstauftrag-workflow.png)
+![](img/forstauftrag-workflow.png)
 
 **Das neu generierte Formular:**
 
-![](/neu-auftrag.png)
+![](img/neu-auftrag.png)
 
 ## Funktionsweise
 
@@ -38,7 +38,7 @@ für Forstaufträge erstellt.
 
 **Der ursprüngliche Arbeitsauftrag händisch ausgefüllt:**
 
-![](/alt-auftrag.png)
+![](img/alt-auftrag.png)
 
 ## Entwicklung
 
