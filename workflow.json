@@ -434,7 +434,15 @@
               "value": "={{ $json.headerTemplate }}"
             },
             {
+              "name": "header",
+              "value": "={{ $json.headerTemplate }}"
+            },
+            {
               "name": "footerTemplate",
+              "value": "={{ $json.footerTemplate }}"
+            },
+            {
+              "name": "footer",
               "value": "={{ $json.footerTemplate }}"
             },
             {
@@ -447,11 +455,11 @@
             },
             {
               "name": "marginTop",
-              "value": "20mm"
+              "value": "24mm"
             },
             {
               "name": "marginBottom",
-              "value": "28mm"
+              "value": "30mm"
             },
             {
               "name": "marginLeft",
