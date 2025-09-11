@@ -1,50 +1,7 @@
 {
   "name": "Test-FA",
   "nodes": [
-    {
-      "parameters": {
-        "mode": "jsonToBinary",
-        "convertAllData": false,
-        "sourceKey": "headerTemplate",
-        "destinationKey": "header",
-        "options": {
-          "encoding": "utf8",
-          "fileName": "header.html",
-          "mimeType": "text/html; charset=utf-8",
-          "useRawData": true
-        }
-      },
-      "type": "n8n-nodes-base.moveBinaryData",
-      "typeVersion": 1.1,
-      "position": [
-        -160,
-        192
-      ],
-      "id": "a6c2f1f1-8c5e-4b3b-9b8a-0f1c2d3e4a5b",
-      "name": "Move Binary Data (Header)"
-    },
-    {
-      "parameters": {
-        "mode": "jsonToBinary",
-        "convertAllData": false,
-        "sourceKey": "footerTemplate",
-        "destinationKey": "footer",
-        "options": {
-          "encoding": "utf8",
-          "fileName": "footer.html",
-          "mimeType": "text/html; charset=utf-8",
-          "useRawData": true
-        }
-      },
-      "type": "n8n-nodes-base.moveBinaryData",
-      "typeVersion": 1.1,
-      "position": [
-        -128,
-        192
-      ],
-      "id": "b7d3e2e2-9d6f-4c4c-a1a2-1a2b3c4d5e6f",
-      "name": "Move Binary Data (Footer)"
-    },
+    
     {
       "parameters": {
         "mode": "jsonToBinary",
@@ -1217,28 +1174,7 @@
         ]
       ]
     },
-    "Move Binary Data (Header)": {
-      "main": [
-        [
-          {
-            "node": "Move Binary Data (Footer)",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Move Binary Data (Footer)": {
-      "main": [
-        [
-          {
-            "node": "Move Binary Data (HTML file)",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
+    
     "Form1": {
       "main": [
         [
@@ -1329,7 +1265,7 @@
       "main": [
         [
           {
-            "node": "Move Binary Data (Header)",
+            "node": "Move Binary Data (HTML file)",
             "type": "main",
             "index": 0
           }
