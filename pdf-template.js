@@ -67,13 +67,10 @@ const mapsUrl = (gps.lat && gps.lon)
 // Helpers (HTML-Encode + kleine UI-Bausteine)
 const esc = (v) => String(v ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
 const chip = (t) => `<span class="chip">${esc(t)}</span>`;
-const chips = (arr=[]) => arr.length ? `<div class="chips">${arr.map(chip).join('')}</div>` : '<span class="muted">—</span>';
-// badge/badges entfernt – derzeit ungenutzt
-// Header/Footer (Chromium) – werden von Gotenberg in den Seitenrand gerendert
-let headerTemplate;
+const chips = (arr=[]) => arr.length ? `<div class="chips">${arr.map(chip).join('')}</div>` : '<span class="muted">—</
 
 // Footer (Seitenfuß im Seitenrand): Rechtliches + Seitenzahlen
-let footerTemplate = `
+const footerTemplate = `
   <style>
     *{box-sizing:border-box}
     body{margin:0; font-family: Arial, Helvetica, sans-serif}
