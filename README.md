@@ -1,52 +1,27 @@
-# Automatisierter Forstauftrag-Workflow
+# Forstauftrag – End-to-End Workflow (n8n → Gotenberg PDF)
 
-Dieses Repository enthält einen n8n-Workflow, der GPS-Daten erfasst,
-Formulareingaben sammelt und daraus ein professionelles PDF-Dokument
-für Forstaufträge erstellt.
+Dieses Projekt erzeugt aus Web-Formularen (inkl. optionaler GPS-Daten) strukturierte **Arbeitsaufträge als PDF**. Besonderheiten:
+- Nutzer wählen in `index.html`, ob und wie GPS geteilt wird.
+- n8n sammelt Formular- und Zusatzdaten (Wetter via OpenWeatherMap, Top-3 Rettungspunkte).
+- Gotenberg (Chromium) rendert das PDF inkl. **einheitlichem Header/Footer**.
+- Ergebnisse können gespeichert, versendet und in Google Sheets geloggt werden.
 
-## Überblick
+## Inhaltsverzeichnis
+1. [Architektur](#architektur)
+2. [Ablauf / Data Flow](#ablauf--data-flow)
+3. [Voraussetzungen](#voraussetzungen)
+4. [Lokales Setup & Deployment](#lokales-setup--deployment)
+5. [Frontend (`index.html`)](#frontend-indexhtml)
+6. [n8n Workflow](#n8n-workflow)
+7. [PDF-Erzeugung (Gotenberg)](#pdf-erzeugung-gotenberg)
+8. [Header/Footer-Design](#headerfooter-design)
+9. [GPS & Rettungspunkte](#gps--rettungspunkte)
+10. [Wetterdaten](#wetterdaten)
+11. [Fehlerbehandlung](#fehlerbehandlung)
+12. [Troubleshooting](#troubleshooting)
+13. [Screenshots](#screenshots)
+14. [Versionierung & Lizenz](#versionierung--lizenz)
 
-**Workflow mit n8n um neue Eingaben zu automatisieren mit entsprechenden Nodes (Knoten):**
+---
 
-![](img/forstauftrag-workflow.png)
-
-**Das neu generierte Formular:**
-
-![](img/neu-auftrag.png)
-
-## Funktionsweise
-
-1. Die Datei `gps-form.html` ermittelt auf Wunsch automatisch die
-   Koordinaten des Geräts oder nimmt manuelle Eingaben entgegen.
-2. Anschließend wird ein n8n-Formular geöffnet, in dem alle
-   Auftragsdaten eingegeben werden.
-3. Nach Absenden werden die Angaben mit Wetterdaten und den nächsten
-   Rettungspunkten kombiniert.
-4. Ein HTML-Template mit modernem Layout wird erzeugt und über
-   Gotenberg in ein PDF umgewandelt.
-5. Die Zustimmung des Nutzers wird im PDF als Ersatz für eine
-   Unterschrift angezeigt, damit das Formular gültig ist.
-
-## Anpassungen
-
-- **Modernes Layout:** Überarbeitete CSS-Variablen und Styles sorgen
-  für ein professionelles, druckfreundliches PDF.
-- **Zustimmung:** Der Text aus dem Formularfeld „Zustimmung“ wird in
-  einer eigenen Karte im PDF ausgegeben.
-
-## Beispiel
-
-**Der ursprüngliche Arbeitsauftrag händisch ausgefüllt:**
-
-![](img/alt-auftrag.png)
-
-## Entwicklung
-
-1. `workflow.json` in n8n importieren.
-2. `gps-form.html` im Browser öffnen, um die Standortabfrage zu testen.
-3. Änderungen am Workflow erneut exportieren und committen.
-
-## Lizenz
-
-MIT – frei für private und kommerzielle Nutzung.
-
+## Architektur
