@@ -468,6 +468,14 @@
             {
               "name": "displayHeaderFooter",
               "value": "true"
+            },
+            {
+              "name": "headerTemplate",
+              "value": "={{ $json.headerTemplate }}"
+            },
+            {
+              "name": "footerTemplate",
+              "value": "={{ $json.footerTemplate }}"
             }
           ]
         },
