@@ -1,11 +1,8 @@
-// Forstauftrag PDF-Generator (Gotenberg/Chromium)
-// 1) Liest n8n-Itemdaten (Form + Zusatzdaten)
-// 2) Erzeugt Header/Footer (Chromium-Seitenränder) und kompaktes HTML
-// 3) Gotenberg rendert PDF inkl. Header/Footer auf jeder Seite
+// Sichere Daten + HTML für Gotenberg (self-contained)
 const d = item.json || {};
 const now = new Date().toLocaleString('de-DE', { dateStyle: 'medium', timeStyle: 'short' });
 
-// Helper mit Aliassen – liefert den ersten gesetzten Wert
+// Helper mit Aliassen
 const pick = (keys, def='—') => {
   for (const k of keys) {
     const v = d?.[k];
@@ -14,9 +11,23 @@ const pick = (keys, def='—') => {
   return def;
 };
 
-// Hinweis: Firmen-/Logo-Upload entfernt – Header nutzt feste 3 Logos (Ryzeup/BG/Auftrag)
+// Firmenangaben
+const firma = {
+  name: d["Firma/Organisation"] ?? "Forstauftrag online",
+  web:  d["Firma Website"] ?? "forstauftrag.online",
+  mail: d["Firma E-Mail"] ?? "info@forstauftrag.online",
+  tel:  d["Firma Telefon"] ?? "–",
+  addr: d["Firma Adresse"] ?? "–",
+};
 
-// === MAPPINGS (genau deine Feldnamen + Aliase) ===
+// Logo (DataURL bevorzugt)
+const uploadLogo = item.binary?.Firmenlogo || item.binary?.logo || item.binary?.jo;
+const fallbackBinLogo = item.binary?.fallback_logo;
+const dataUrlFromBin = (bin) => bin ? `data:${bin.mimeType || 'image/png'};base64,${bin.data}` : null;
+const DEFAULT_LOGO_DATA_URL = null;
+const logoDataUrl = dataUrlFromBin(uploadLogo) || dataUrlFromBin(fallbackBinLogo) || DEFAULT_LOGO_DATA_URL;
+
+// === MAPPINGS (genau deine Feldnamen + Aliase)
 const meta = {
   datum:            pick(['Datum Arbeitstag: ', 'Datum']),
   einsatzort:       pick(['Einsatzort', 'Ort', 'Einsatz-Ort']),
@@ -42,7 +53,7 @@ const sicherheit = {
   unterwiesen:       pick(['Im Trupp/Arbeitsgruppe  unterwiesen?']),
 };
 
-// Zustimmung / Unterschrift-Ersatz (vereinfachte Darstellung)
+// Zustimmung / Unterschrift-Ersatz
 const zustimmung = Array.isArray(d['Zustimmung:']) ? d['Zustimmung:'].join(', ') : pick(['Zustimmung:', 'Zustimmung'], '—');
 
 // Wetter (OpenWeatherMap)
@@ -64,15 +75,15 @@ const mapsUrl = (gps.lat && gps.lon)
   ? `https://www.google.com/maps?q=${encodeURIComponent(`${gps.lat},${gps.lon}`)}`
   : null;
 
-// Helpers (HTML-Encode + kleine UI-Bausteine)
+// Helpers
 const esc = (v) => String(v ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
 const chip = (t) => `<span class="chip">${esc(t)}</span>`;
 const chips = (arr=[]) => arr.length ? `<div class="chips">${arr.map(chip).join('')}</div>` : '<span class="muted">—</span>';
-// badge/badges entfernt – derzeit ungenutzt
-// Header/Footer (Chromium) – werden von Gotenberg in den Seitenrand gerendert
+const badge = (t) => `<span class="badge">${esc(t)}</span>`;
+const badges = (arr=[]) => arr.length ? `<div class="badges-list">${arr.map(badge).join('')}</div>` : '<span class="muted">—</span>';
+// Header/Footer (Chromium)
 let headerTemplate;
 
-// Footer (Seitenfuß im Seitenrand): Rechtliches + Seitenzahlen
 const footerTemplate = `
   <style>
     *{box-sizing:border-box} body{margin:0;font-family:Arial,Helvetica,sans-serif}
@@ -424,29 +435,6 @@ const LOGO_RYZEUP = 'data:image/png;base64,' +
   'iRMjhVwikUgkEidGCrlEIpFIJE6MFHKJRCKRSJwYKeQSiUQikTgxUsglEolEInFi/n94uIVXMJZv' +
   'MAAAAABJRU5ErkJggg==' +
   '';
-
-// Neuer Header nach Logos: 3 Logos + Meta
-headerTemplate = `
-  <style>
-    *{box-sizing:border-box} body{margin:0;font-family:Arial,Helvetica,sans-serif}
-    .h-wrap{background:#B8E6F1; padding:10px 24px; display:flex; align-items:center; justify-content:space-between; font-size:11px}
-    .h-logos{display:flex; align-items:center; gap:12px}
-    .h-logos img{width:auto; max-height:22px; object-fit:contain}
-    .h-title{font-size:14px;font-weight:700}
-    .h-meta{font-size:11px;opacity:.85}
-  </style>
-  <div class="h-wrap">
-    <div class="h-logos">
-      <img src="${LOGO_RYZEUP}" alt="Ryzeup" />
-      <img src="${LOGO_BG}" alt="BG" />
-      <img src="${LOGO_AUFTRAG}" alt="Auftrag" />
-    </div>
-    <div>
-      <div class="h-title">Arbeitsauftrag Forstwirtschaft</div>
-      <div class="h-meta">Einsatzort: ${esc(meta.einsatzort || '—')} • Datum: ${esc(meta.datum || '—')} • Erstellt: ${esc(now)}</div>
-    </div>
-  </div>
-`;
 
 const LOGO_BG = 'data:image/png;base64,' +
   'iVBORw0KGgoAAAANSUhEUgAAC2AAAATCCAYAAABhImSKAAEAAElEQVR4Xuz9CYBlZ10n/J/t3lp6' +
@@ -4607,7 +4595,6 @@ const html = `<!doctype html>
     --chip-bg: #0f3326;
   }
 
-  /* Platz für Header (oben) und Footer (unten) im Seitenrand lassen */
   @page { size: A4; margin: 15mm 20mm 35mm 20mm; }
   html, body { height: 100%; }
   * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -4616,7 +4603,7 @@ const html = `<!doctype html>
     margin:0; padding:0;
     background: var(--bg);
     color: var(--text);
-    font: 11pt/1.55 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    font: 15pt/1.55 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
   }
 
   .page{
@@ -4626,22 +4613,35 @@ const html = `<!doctype html>
     background: var(--surface);
     display: grid;
     grid-template-rows: auto 1fr auto;
-    padding: 10px;
+    padding: 16mm;
     overflow: visible;
+    page-break-after: always;
   }
-  /* Body-Logos entfernt – Logos sind im Header-Template (Seitenrand) enthalten */
 
+  .logos{
+    display:flex; align-items:center; justify-content:flex-start;
+    gap: 16mm;
+    margin: 0 0 10mm 0;
+    overflow: hidden;
+  }
+  .logos img{
+    max-height: 20mm;
+    width: auto; height: auto;
+    display: block;
+    max-width: 100%;
+    object-fit: contain;
+  }
 
   .header{
     background: linear-gradient(135deg, var(--brand-1), var(--brand-2));
     color:#05110d;
     border-radius: 10px;
-    padding: 5mm 7mm;
+    padding: 7mm 9mm;
     margin-bottom: 7mm;
   }
   .header h1{
     margin: 0 0 2mm;
-    font-size: 18pt;
+    font-size: 25pt;
     letter-spacing: .2px;
   }
   .header .sub{ margin:0; opacity:.85; }
@@ -4657,32 +4657,24 @@ const html = `<!doctype html>
     background: var(--card);
     border:1px solid var(--border);
     border-radius:12px;
-    margin: 12px 0;
+    margin: 7mm 0;
     overflow:hidden;
     box-shadow: 0 8px 24px rgba(0,0,0,.23);
     page-break-inside: avoid;
     break-inside: avoid-page;
   }
   .card .card-h{
+    background: linear-gradient(90deg, #0f2b20, rgba(15,43,32,0));
     padding: 5mm 7mm 4mm;
     font-weight:700; letter-spacing:.3px; border-bottom:1px solid var(--border);
   }
-  .card .card-b{ padding: 4mm 5mm; }
-
-  .card[class*='card--']{ border-left:4px solid var(--accent); }
-  .card[class*='card--'] .card-h{ background:var(--accent); color:#05110d; }
-  .card--auftrag{ --accent:#34d399; }
-  .card--sicherheit{ --accent:#f59e0b; }
-  .card--wetter{ --accent:#3b82f6; }
-  .card--rettung{ --accent:#ef4444; }
-  .card--gps{ --accent:#8b5cf6; }
-  .card--zustimmung{ --accent:#10b981; }
+  .card .card-b{ padding: 6mm 7mm; }
 
   .grid{
-    display:flex; flex-wrap:wrap; gap: 3mm 5mm;
+    display:flex; flex-wrap:wrap; gap: 5mm 8mm;
   }
   .row{
-    display:flex; flex-direction:column; flex:1 1 calc(50% - 5mm); min-width:80mm;
+    display:flex; flex-direction:column; flex:1 1 calc(50% - 8mm); min-width:90mm;
   }
 
   .label{ font-size: 10pt; color: var(--muted); text-transform: uppercase; letter-spacing:.35px; margin-bottom:1mm; }
@@ -4733,6 +4725,13 @@ const html = `<!doctype html>
 <body>
   <div class="page">
 
+    <!-- Logos -->
+    <div class="logos">
+      <img src="${LOGO_RYZEUP}" alt="Ryzeup">
+      <img src="${LOGO_BG}" alt="BG">
+      <img src="${LOGO_AUFTRAG}" alt="Auftrag">
+    </div>
+
     <!-- Header -->
     <div class="header">
       <h1>Arbeitsauftrag Forstwirtschaft</h1>
@@ -4747,7 +4746,7 @@ const html = `<!doctype html>
     <!-- Inhalt -->
     <div class="content">
 
-      <div class="card card--auftrag">
+      <div class="card">
         <div class="card-h">Auftragsdaten</div>
         <div class="card-b">
           <div class="grid">
@@ -4761,7 +4760,7 @@ const html = `<!doctype html>
         </div>
       </div>
 
-      <div class="card card--sicherheit">
+      <div class="card">
         <div class="card-h">Sicherheit &amp; Organisation</div>
         <div class="card-b">
           <div class="grid">
@@ -4803,7 +4802,7 @@ const html = `<!doctype html>
         </div>
       </div>
 
-      <div class="card card--wetter">
+      <div class="card">
         <div class="card-h">Wetterbedingungen</div>
         <div class="card-b">
           <div class="weather">
@@ -4816,7 +4815,7 @@ const html = `<!doctype html>
         </div>
       </div>
 
-      <div class="card card--rettung">
+      <div class="card">
         <div class="card-h">Nächste Rettungspunkte</div>
         <div class="card-b">
           <table class="tbl">
@@ -4839,7 +4838,7 @@ const html = `<!doctype html>
         </div>
       </div>
 
-      <div class="card card--gps">
+      <div class="card">
         <div class="card-h">GPS-Standort</div>
         <div class="card-b">
           <div class="gps">
@@ -4855,7 +4854,7 @@ const html = `<!doctype html>
         </div>
       </div>
 
-      <div class="card card--zustimmung">
+      <div class="card">
         <div class="card-h">Zustimmung</div>
         <div class="card-b">
           <div class="consent">
@@ -4874,3 +4873,44 @@ const html = `<!doctype html>
 
 // Rückgabe
 return { json: { ...item.json, html, headerTemplate, footerTemplate } };
+const latitude = parseFloat($('Form3').first().json['Standortdaten - latitude (erster Wert in GoogleMaps)']);
+const longitude = parseFloat($('Form3').first().json['Standortdaten - longitude (zweiter Wert in GoogleMaps)']);
+const rettungspunkte = $items();
+
+function distance(lat1, lon1, lat2, lon2) {
+  const R = 6371e3;
+  const toRad = deg => deg * (Math.PI / 180);
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat / 2) ** 2 +
+            Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+            Math.sin(dLon / 2) ** 2;
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+const distanzArray = rettungspunkte.map(punkt => {
+  const dist = distance(latitude, longitude, punkt.json.wgs_breite, punkt.json.wgs_laenge);
+  return {
+    rp_nr: punkt.json.rp_nr,
+    entfernung_m: Math.round(dist),
+    lat: punkt.json.wgs_breite,
+    lon: punkt.json.wgs_laenge,
+    id: punkt.json.id,
+    beschreibung: punkt.json.beschreibung,
+    bundesland: punkt.json.bundesland
+  };
+});
+
+const top3 = distanzArray.sort((a, b) => a.entfernung_m - b.entfernung_m).slice(0, 3);
+
+return [
+  {
+    json: {
+      gps_ursprung: { latitude, longitude },
+      top_3_rettungspunkte: top3
+    }
+  }
+];
+
+if (item.binary && item.binary.data) { const ort=(item.json['Einsatzort']||item.json['Ort']||'forstauftrag').toString().trim().toLowerCase().replace(/[^a-z0-9]+/g,'-'); const datum=new Date().toISOString().split('T')[0]; item.binary.data.fileName=`${ort}-${datum}.pdf`; item.binary.data.mimeType='application/pdf'; item.binary.data.fileExtension='pdf'; } return item;

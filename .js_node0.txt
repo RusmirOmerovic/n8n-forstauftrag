@@ -5,7 +5,7 @@
 const d = item.json || {};
 const now = new Date().toLocaleString('de-DE', { dateStyle: 'medium', timeStyle: 'short' });
 
-// Helper mit Aliassen – liefert den ersten gesetzten Wert
+// Helper mit Aliassen
 const pick = (keys, def='—') => {
   for (const k of keys) {
     const v = d?.[k];
@@ -14,9 +14,9 @@ const pick = (keys, def='—') => {
   return def;
 };
 
-// Hinweis: Firmen-/Logo-Upload entfernt – Header nutzt feste 3 Logos (Ryzeup/BG/Auftrag)
 
-// === MAPPINGS (genau deine Feldnamen + Aliase) ===
+
+// === MAPPINGS (genau deine Feldnamen + Aliase)
 const meta = {
   datum:            pick(['Datum Arbeitstag: ', 'Datum']),
   einsatzort:       pick(['Einsatzort', 'Ort', 'Einsatz-Ort']),
@@ -42,7 +42,7 @@ const sicherheit = {
   unterwiesen:       pick(['Im Trupp/Arbeitsgruppe  unterwiesen?']),
 };
 
-// Zustimmung / Unterschrift-Ersatz (vereinfachte Darstellung)
+// Zustimmung / Unterschrift-Ersatz
 const zustimmung = Array.isArray(d['Zustimmung:']) ? d['Zustimmung:'].join(', ') : pick(['Zustimmung:', 'Zustimmung'], '—');
 
 // Wetter (OpenWeatherMap)
@@ -69,10 +69,11 @@ const esc = (v) => String(v ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').re
 const chip = (t) => `<span class="chip">${esc(t)}</span>`;
 const chips = (arr=[]) => arr.length ? `<div class="chips">${arr.map(chip).join('')}</div>` : '<span class="muted">—</span>';
 // badge/badges entfernt – derzeit ungenutzt
-// Header/Footer (Chromium) – werden von Gotenberg in den Seitenrand gerendert
+
+// Header/Footer (Chromium)
 let headerTemplate;
 
-// Footer (Seitenfuß im Seitenrand): Rechtliches + Seitenzahlen
+// Footer (Chromium): Rechtliches + Seitenzahlen
 const footerTemplate = `
   <style>
     *{box-sizing:border-box} body{margin:0;font-family:Arial,Helvetica,sans-serif}
@@ -424,29 +425,6 @@ const LOGO_RYZEUP = 'data:image/png;base64,' +
   'iRMjhVwikUgkEidGCrlEIpFIJE6MFHKJRCKRSJwYKeQSiUQikTgxUsglEolEInFi/n94uIVXMJZv' +
   'MAAAAABJRU5ErkJggg==' +
   '';
-
-// Neuer Header nach Logos: 3 Logos + Meta
-headerTemplate = `
-  <style>
-    *{box-sizing:border-box} body{margin:0;font-family:Arial,Helvetica,sans-serif}
-    .h-wrap{background:#B8E6F1; padding:10px 24px; display:flex; align-items:center; justify-content:space-between; font-size:11px}
-    .h-logos{display:flex; align-items:center; gap:12px}
-    .h-logos img{width:auto; max-height:22px; object-fit:contain}
-    .h-title{font-size:14px;font-weight:700}
-    .h-meta{font-size:11px;opacity:.85}
-  </style>
-  <div class="h-wrap">
-    <div class="h-logos">
-      <img src="${LOGO_RYZEUP}" alt="Ryzeup" />
-      <img src="${LOGO_BG}" alt="BG" />
-      <img src="${LOGO_AUFTRAG}" alt="Auftrag" />
-    </div>
-    <div>
-      <div class="h-title">Arbeitsauftrag Forstwirtschaft</div>
-      <div class="h-meta">Einsatzort: ${esc(meta.einsatzort || '—')} • Datum: ${esc(meta.datum || '—')} • Erstellt: ${esc(now)}</div>
-    </div>
-  </div>
-`;
 
 const LOGO_BG = 'data:image/png;base64,' +
   'iVBORw0KGgoAAAANSUhEUgAAC2AAAATCCAYAAABhImSKAAEAAElEQVR4Xuz9CYBlZ10n/J/t3lp6' +
@@ -4585,6 +4563,28 @@ const LOGO_AUFTRAG = 'data:image/png;base64,' +
 // Verbesserter JavaScript Code für das PDF-Layout
 // Dieser Code ersetzt den bestehenden HTML-Generierungsteil in Ihrem n8n Workflow
 
+// Header (Chromium): 3 Logos + Meta (Ryzeup/BG/Auftrag)
+headerTemplate = `
+  <style>
+    *{box-sizing:border-box} body{margin:0;font-family:Arial,Helvetica,sans-serif}
+    .h-wrap{background:#B8E6F1; padding:10px 24px; display:flex; align-items:center; justify-content:space-between; font-size:11px}
+    .h-logos{display:flex; align-items:center; gap:12px}
+    .h-logos img{width:auto; max-height:22px; object-fit:contain}
+    .h-title{font-size:14px;font-weight:700}
+    .h-meta{font-size:11px;opacity:.85}
+  </style>
+  <div class="h-wrap">
+    <div class="h-logos">
+      <img src="${LOGO_RYZEUP}" alt="Ryzeup" />
+      <img src="${LOGO_BG}" alt="BG" />
+      <img src="${LOGO_AUFTRAG}" alt="Auftrag" />
+    </div>
+    <div>
+      <div class="h-title">Arbeitsauftrag Forstwirtschaft</div>
+      <div class="h-meta">Einsatzort: ${esc(meta.einsatzort || '—')} • Datum: ${esc(meta.datum || '—')} • Erstellt: ${esc(now)}</div>
+    </div>
+  </div>
+`;
 const html = `<!doctype html>
 <html lang="de">
 <head>
@@ -4628,6 +4628,7 @@ const html = `<!doctype html>
     grid-template-rows: auto 1fr auto;
     padding: 10px;
     overflow: visible;
+    page-break-after: always;
   }
   /* Body-Logos entfernt – Logos sind im Header-Template (Seitenrand) enthalten */
 
@@ -4636,7 +4637,7 @@ const html = `<!doctype html>
     background: linear-gradient(135deg, var(--brand-1), var(--brand-2));
     color:#05110d;
     border-radius: 10px;
-    padding: 5mm 7mm;
+    padding: 7mm 9mm;
     margin-bottom: 7mm;
   }
   .header h1{
@@ -4657,32 +4658,24 @@ const html = `<!doctype html>
     background: var(--card);
     border:1px solid var(--border);
     border-radius:12px;
-    margin: 12px 0;
+    margin: 6mm 0;
     overflow:hidden;
     box-shadow: 0 8px 24px rgba(0,0,0,.23);
     page-break-inside: avoid;
     break-inside: avoid-page;
   }
   .card .card-h{
+    background: linear-gradient(90deg, #0f2b20, rgba(15,43,32,0));
     padding: 5mm 7mm 4mm;
     font-weight:700; letter-spacing:.3px; border-bottom:1px solid var(--border);
   }
   .card .card-b{ padding: 4mm 5mm; }
 
-  .card[class*='card--']{ border-left:4px solid var(--accent); }
-  .card[class*='card--'] .card-h{ background:var(--accent); color:#05110d; }
-  .card--auftrag{ --accent:#34d399; }
-  .card--sicherheit{ --accent:#f59e0b; }
-  .card--wetter{ --accent:#3b82f6; }
-  .card--rettung{ --accent:#ef4444; }
-  .card--gps{ --accent:#8b5cf6; }
-  .card--zustimmung{ --accent:#10b981; }
-
   .grid{
-    display:flex; flex-wrap:wrap; gap: 3mm 5mm;
+    display:flex; flex-wrap:wrap; gap: 5mm 8mm;
   }
   .row{
-    display:flex; flex-direction:column; flex:1 1 calc(50% - 5mm); min-width:80mm;
+    display:flex; flex-direction:column; flex:1 1 calc(50% - 8mm); min-width:90mm;
   }
 
   .label{ font-size: 10pt; color: var(--muted); text-transform: uppercase; letter-spacing:.35px; margin-bottom:1mm; }
@@ -4702,7 +4695,7 @@ const html = `<!doctype html>
 
   .weather{ display:grid; grid-template-columns: repeat(5, 1fr); gap:6mm; text-align:center; }
   .wbox{ background: var(--surface-2); border:1px solid var(--border); border-radius:10px; padding:6mm 4mm; }
-  .wval{ font-size: 16pt; font-weight:800; color: var(--brand-2); margin-bottom:1mm; }
+  .wval{ font-size: 14pt; font-weight:800; color: var(--brand-2); margin-bottom:1mm; }
   .wlab{ font-size:8.5pt; color: var(--muted); text-transform:uppercase; }
 
   table.tbl{ width:100%; border-collapse:separate; border-spacing:0; background:var(--surface-2); border:1px solid var(--border); border-radius:10px; overflow:hidden; }
@@ -4747,7 +4740,7 @@ const html = `<!doctype html>
     <!-- Inhalt -->
     <div class="content">
 
-      <div class="card card--auftrag">
+      <div class="card">
         <div class="card-h">Auftragsdaten</div>
         <div class="card-b">
           <div class="grid">
@@ -4761,7 +4754,7 @@ const html = `<!doctype html>
         </div>
       </div>
 
-      <div class="card card--sicherheit">
+      <div class="card">
         <div class="card-h">Sicherheit &amp; Organisation</div>
         <div class="card-b">
           <div class="grid">
@@ -4803,7 +4796,7 @@ const html = `<!doctype html>
         </div>
       </div>
 
-      <div class="card card--wetter">
+      <div class="card">
         <div class="card-h">Wetterbedingungen</div>
         <div class="card-b">
           <div class="weather">
@@ -4816,7 +4809,7 @@ const html = `<!doctype html>
         </div>
       </div>
 
-      <div class="card card--rettung">
+      <div class="card">
         <div class="card-h">Nächste Rettungspunkte</div>
         <div class="card-b">
           <table class="tbl">
@@ -4839,7 +4832,7 @@ const html = `<!doctype html>
         </div>
       </div>
 
-      <div class="card card--gps">
+      <div class="card">
         <div class="card-h">GPS-Standort</div>
         <div class="card-b">
           <div class="gps">
@@ -4855,7 +4848,7 @@ const html = `<!doctype html>
         </div>
       </div>
 
-      <div class="card card--zustimmung">
+      <div class="card">
         <div class="card-h">Zustimmung</div>
         <div class="card-b">
           <div class="consent">
