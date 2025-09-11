@@ -14,6 +14,43 @@ const pick = (keys, def='—') => {
   return def;
 };
 
+// === Design Tokens (Header/Footer) ===
+const THEME = {
+  brandBg:    '#112240',
+  brandText:  '#ffffff',
+  bodyFont:   'Arial, Helvetica, sans-serif',
+  fontSizeH:  9,     // Header font size (px)
+  fontSizeF:  8.5,   // Footer font size (px)
+  padH:       '6px 24px',   // Header padding
+  padF:       '8px 24px',   // Footer padding
+  linkGap:    '16px',
+  borderTopF: '1px solid rgba(255,255,255,.08)',
+  // Optional: Logo (Base64) – könnt ihr später befüllen
+  logoLeft:   '',  // z.B. data:image/png;base64,....
+  logoRight:  ''
+};
+
+// Kleinformatierte Helper für HTML in Header/Footer:
+const hcss = `
+  *{box-sizing:border-box} body{margin:0; font-family:${THEME.bodyFont}}
+  .wrap{padding:${THEME.padH}; font-size:${THEME.fontSizeH}px; line-height:1.35; width:100%}
+  .row{display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap}
+  .muted{opacity:.7}
+  .logos{display:flex; align-items:center; gap:12px}
+  img{height:14px}
+`;
+
+const fcss = `
+  *{box-sizing:border-box} body{margin:0; font-family:${THEME.bodyFont}}
+  .wrap{background:${THEME.brandBg}; color:${THEME.brandText}; padding:${THEME.padF};
+        font-size:${THEME.fontSizeF}px; line-height:1.35; border-top:${THEME.borderTopF}}
+  .row{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px}
+  .col{display:flex; gap:${THEME.linkGap}; align-items:center; flex-wrap:wrap}
+  a{color:${THEME.brandText}; text-decoration:none}
+  .num{white-space:nowrap}
+  img{height:14px; filter: brightness(0) invert(1)}
+`;
+
 // Hinweis: Firmen-/Logo-Upload entfernt – Header nutzt feste 3 Logos (Ryzeup/BG/Auftrag)
 
 // === MAPPINGS (genau deine Feldnamen + Aliase) ===
@@ -68,40 +105,6 @@ const mapsUrl = (gps.lat && gps.lon)
 const esc = (v) => String(v ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
 const chip = (t) => `<span class="chip">${esc(t)}</span>`;
 const chips = (arr=[]) => arr.length ? `<div class="chips">${arr.map(chip).join('')}</div>` : '<span class="muted">—</
-
-// Footer (Seitenfuß im Seitenrand): Rechtliches + Seitenzahlen
-const footerTemplate = `
-  <style>
-    *{box-sizing:border-box}
-    body{margin:0; font-family: Arial, Helvetica, sans-serif}
-    .f-wrap{
-      background:#112240; color:#fff;
-      padding:8px 24px;
-      font-size:8.5px; line-height:1.35;
-      border-top:1px solid rgba(255,255,255,.08);
-    }
-    .f-row{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px}
-    .f-col{display:flex; gap:16px; align-items:center; flex-wrap:wrap}
-    a{color:#fff; text-decoration:none}
-    .num{white-space:nowrap}
-  </style>
-  <div class="f-wrap">
-    <div class="f-row">
-      <div class="f-col">
-        <strong>Ryzeup UG (haftungsbeschränkt)</strong>
-        <span>Rotthang 3, 84494 Neumarkt-Sankt Veit</span>
-        <span>HRB 33167, AG Traunstein</span>
-      </div>
-      <div class="f-col">
-        <a>Kontakt</a><a>About</a><a>Termin</a><a>Datenschutz</a>
-        <span class="num"><span class="pageNumber"></span>/<span class="totalPages"></span></span>
-      </div>
-    </div>
-    <div class="f-row" style="margin-top:4px">
-      <div>© ${new Date().getFullYear()} Ryzeup UG. Alle Rechte vorbehalten.</div>
-    </div>
-  </div>
-`;
 
 // === Logos als Data-URLs (klein & inline) ===
 const LOGO_RYZEUP = 'data:image/png;base64,' +
@@ -4559,42 +4562,10 @@ const LOGO_AUFTRAG = 'data:image/png;base64,' +
   'CEAAAhCAAAQgAAEIQAACEIBARwL/H/NpXxCLeoZLAAAAAElFTkSuQmCC' +
   '';
 
-// Neuer Header nach Logos: 3 Logos + Meta
-headerTemplate = `
-  <style>
-    *{box-sizing:border-box}
-    body{margin:0; font-family: Arial, Helvetica, sans-serif}
-    .h-wrap{
-      display:flex; align-items:center; justify-content:space-between;
-      padding:8px 18px;
-      background:#B8E6F1;
-      border-bottom:1px solid rgba(0,0,0,.06);
-      font-size:11px;
-    }
-    .h-logos{display:flex; align-items:center; gap:12px; min-width:0}
-    .h-logos img{
-      display:inline-block; width:auto; max-height:28px; object-fit:contain;
-    }
-    .h-right{display:flex; align-items:center; gap:12px; flex-wrap:wrap; min-width:0}
-    .h-title{font-weight:700; white-space:nowrap}
-    .h-meta{opacity:.85; white-space:nowrap}
-  </style>
-  <div class="h-wrap">
-    <div class="h-logos">
-      <img src="${LOGO_RYZEUP}" alt="Ryzeup"/>
-      <img src="${LOGO_BG}" alt="BG"/>
-      <img src="${LOGO_AUFTRAG}" alt="Auftrag"/>
-    </div>
-    <div class="h-right">
-      <span class="h-title">Arbeitsauftrag Forstwirtschaft</span>
-      <span class="h-meta">Einsatzort: ${esc(meta.einsatzort || '—')} • Datum: ${esc(meta.datum || '—')} • Erstellt: ${esc(now)}</span>
-    </div>
-  </div>
-`;
 
 
-// Verbesserter JavaScript Code für das PDF-Layout
-// Dieser Code ersetzt den bestehenden HTML-Generierungsteil in Ihrem n8n Workflow
+
+// JavaScript Code für das PDF-Layout (body)
 
 const html = `<!doctype html>
 <html lang="de">
@@ -4887,6 +4858,42 @@ const html = `<!doctype html>
   </div>
 </body>
 </html>
+`;
+
+// === HEADER ===
+const headerTemplate = `
+  <style>${hcss}</style>
+  <div class="wrap">
+    <div class="row">
+      <div class="logos">
+        ${THEME.logoLeft ? `<img src="${THEME.logoLeft}" alt="Logo"/>` : ''}
+        <strong>Arbeitsauftrag</strong>
+      </div>
+      <div class="muted">${esc(einsatzort || '—')} · ${esc(now)}</div>
+    </div>
+  </div>
+`;
+
+// === FOOTER ===
+const footerTemplate = `
+  <style>${fcss}</style>
+  <div class="wrap">
+    <div class="row">
+      <div class="col">
+        ${THEME.logoRight ? `<img src="${THEME.logoRight}" alt="Logo"/>` : ''}
+        <strong>Ryzeup UG</strong>
+        <span>Rotthang 3, 84494 Neumarkt-Sankt Veit</span>
+        <span>HRB 33167, AG Traunstein</span>
+      </div>
+      <div class="col">
+        <a>Kontakt</a><a>About</a><a>Termin</a><a>Datenschutz</a>
+        <span class="num"><span class="pageNumber"></span>/<span class="totalPages"></span></span>
+      </div>
+    </div>
+    <div class="row" style="margin-top:4px">
+      <div>© ${new Date().getFullYear()} Ryzeup UG. Alle Rechte vorbehalten.</div>
+    </div>
+  </div>
 `;
 
 // Rückgabe
