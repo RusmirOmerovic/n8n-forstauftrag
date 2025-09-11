@@ -474,16 +474,6 @@
               "inputDataFieldName": "files"
             },
             {
-              "parameterType": "formBinaryData",
-              "name": "header",
-              "inputDataFieldName": "header"
-            },
-            {
-              "parameterType": "formBinaryData",
-              "name": "footer",
-              "inputDataFieldName": "footer"
-            },
-            {
               "name": "emulatedMediaType",
               "value": "print"
             },
