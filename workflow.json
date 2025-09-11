@@ -451,7 +451,7 @@
             },
             {
               "name": "preferCssPageSize",
-              "value": "true"
+              "value": "false"
             },
             {
               "name": "marginTop",
