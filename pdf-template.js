@@ -4620,8 +4620,8 @@ const html = `<!doctype html>
     --ok: #22c55e;
     --chip-bg: #0f3326;
 /* Platz für Header (oben) und Footer (unten) im Seitenrand lassen */
-    --top-gap: 20mm;
-    --bottom-gap: 28mm;
+    --top-gap: 24mm;
+    --bottom-gap: 30mm;
   }
 
   /* Druckeinstellungen */
