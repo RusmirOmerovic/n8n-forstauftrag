@@ -425,29 +425,6 @@ const LOGO_RYZEUP = 'data:image/png;base64,' +
   'MAAAAABJRU5ErkJggg==' +
   '';
 
-// Neuer Header nach Logos: 3 Logos + Meta
-headerTemplate = `
-  <style>
-    *{box-sizing:border-box} body{margin:0;font-family:Arial,Helvetica,sans-serif}
-    .h-wrap{background:#B8E6F1; padding:10px 24px; display:flex; align-items:center; justify-content:space-between; font-size:11px}
-    .h-logos{display:flex; align-items:center; gap:12px}
-    .h-logos img{width:auto; max-height:22px; object-fit:contain}
-    .h-title{font-size:14px;font-weight:700}
-    .h-meta{font-size:11px;opacity:.85}
-  </style>
-  <div class="h-wrap">
-    <div class="h-logos">
-      <img src="${LOGO_RYZEUP}" alt="Ryzeup" />
-      <img src="${LOGO_BG}" alt="BG" />
-      <img src="${LOGO_AUFTRAG}" alt="Auftrag" />
-    </div>
-    <div>
-      <div class="h-title">Arbeitsauftrag Forstwirtschaft</div>
-      <div class="h-meta">Einsatzort: ${esc(meta.einsatzort || '—')} • Datum: ${esc(meta.datum || '—')} • Erstellt: ${esc(now)}</div>
-    </div>
-  </div>
-`;
-
 const LOGO_BG = 'data:image/png;base64,' +
   'iVBORw0KGgoAAAANSUhEUgAAC2AAAATCCAYAAABhImSKAAEAAElEQVR4Xuz9CYBlZ10n/J/t3lp6' +
   'SyBkISQsM864pAOo8+pIFhQJJJ2EHQcBMaS7qpOo48y8g+I4o7jPOKOvQrq7ukFmBHQkJIEkhLDI' +
@@ -4581,6 +4558,30 @@ const LOGO_AUFTRAG = 'data:image/png;base64,' +
   'AAEIQAACEIAABCAAAQhAAAIQgAAEIAABCEAAAhCAAAQgAAEIQAACEIAABCAAAQhAAAIQgAAEIAAB' +
   'CEAAAhCAAAQgAAEIQAACEIBARwL/H/NpXxCLeoZLAAAAAElFTkSuQmCC' +
   '';
+
+// Neuer Header nach Logos: 3 Logos + Meta
+headerTemplate = `
+  <style>
+    *{box-sizing:border-box} body{margin:0;font-family:Arial,Helvetica,sans-serif}
+    .h-wrap{background:#B8E6F1; padding:10px 24px; display:flex; align-items:center; justify-content:space-between; font-size:11px}
+    .h-logos{display:flex; align-items:center; gap:12px}
+    .h-logos img{width:auto; max-height:22px; object-fit:contain}
+    .h-title{font-size:14px;font-weight:700}
+    .h-meta{font-size:11px;opacity:.85}
+  </style>
+  <div class="h-wrap">
+    <div class="h-logos">
+      <img src="${LOGO_RYZEUP}" alt="Ryzeup" />
+      <img src="${LOGO_BG}" alt="BG" />
+      <img src="${LOGO_AUFTRAG}" alt="Auftrag" />
+    </div>
+    <div>
+      <div class="h-title">Arbeitsauftrag Forstwirtschaft</div>
+      <div class="h-meta">Einsatzort: ${esc(meta.einsatzort || '—')} • Datum: ${esc(meta.datum || '—')} • Erstellt: ${esc(now)}</div>
+    </div>
+  </div>
+`;
+
 
 // Verbesserter JavaScript Code für das PDF-Layout
 // Dieser Code ersetzt den bestehenden HTML-Generierungsteil in Ihrem n8n Workflow
