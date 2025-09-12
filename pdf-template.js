@@ -1,124 +1,3 @@
-<<<<<<< HEAD
-=======
-// Forstauftrag PDF-Generator (Gotenberg/Chromium)
-// 1) Liest n8n-Itemdaten (Form + Zusatzdaten)
-// 2) Erzeugt Header/Footer (Chromium-Seitenränder) und HTML
-// 3) Gotenberg rendert PDF inkl. Header/Footer auf jeder Seite
-
-const d = item.json || {};
-const now = new Date().toLocaleString('de-DE', { dateStyle: 'medium', timeStyle: 'short' });
-
-// Helper: ersten gesetzten Wert liefern
-const pick = (keys, def='—') => {
-  for (const k of keys) {
-    const v = d?.[k];
-    if (v !== undefined && v !== null && String(v) !== '') return v;
-  }
-  return def;
-};
-
-// === Design Tokens (Header/Footer) ===
-const THEME = {
-  brandBg:    '#112240',
-  brandText:  '#ffffff',
-  bodyFont:   'Arial, Helvetica, sans-serif',
-  fontSizeH:  9,     // Header font size (px)
-  fontSizeF:  8.5,   // Footer font size (px)
-  padH:       '6px 24px',
-  padF:       '8px 24px',
-  linkGap:    '16px',
-  borderTopF: '1px solid rgba(255,255,255,.08)',
-  // Optional: Logos (Base64 oder URL)
-  logoLeft:   '/* HIER LOGO-LINKS ALS data:image/png;base64,... ODER URL EINSETZEN */',
-  logoRight:  '/* HIER LOGO-RECHTS ALS data:image/png;base64,... ODER URL EINSETZEN */',
-};
-
-// Header/Footer CSS
-const hcss = `
-  *{box-sizing:border-box} body{margin:0; font-family:${THEME.bodyFont}}
-  .wrap{padding:${THEME.padH}; font-size:${THEME.fontSizeH}px; line-height:1.35; width:100%}
-  .row{display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap}
-  .muted{opacity:.7}
-  .logos{display:flex; align-items:center; gap:12px}
-  img{height:14px}
-`;
-const fcss = `
-  *{box-sizing:border-box} body{margin:0; font-family:${THEME.bodyFont}}
-  .wrap{background:${THEME.brandBg}; color:${THEME.brandText}; padding:${THEME.padF};
-        font-size:${THEME.fontSizeF}px; line-height:1.35; border-top:${THEME.borderTopF}}
-  .row{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px}
-  .col{display:flex; gap:${THEME.linkGap}; align-items:center; flex-wrap:wrap}
-  a{color:${THEME.brandText}; text-decoration:none}
-  .num{white-space:nowrap}
-  img{height:14px; filter: brightness(0) invert(1)}
-`;
-
-// === Feld-Mappings (deine Original-Feldnamen inkl. Aliase) ===
-const meta = {
-  datum:            pick(['Datum Arbeitstag: ', 'Datum']),
-  einsatzort:       pick(['Einsatzort', 'Ort', 'Einsatz-Ort']),
-  verantwortlicher: pick(['Arbeitsverantwortlicher', 'Verantwortlicher']),
-  weitere:          pick(['weitere Einsatzkräfte:', 'weitere Einsatzkraefte'], '—'),
-  kunde:            pick(['Ansprechpartner Kunde: ', 'Kunde']),
-  kundeTel:         pick(['Kunde Telefon: ', 'Kunde Telefon', 'Telefon'], '—'),
-  ersthelfer:       pick(['Ersthelfer vor Ort: '], '—'),
-  submittedAt:      pick(['submittedAt'], now),
-};
-
-const sicherheit = {
-  verkehr:           pick(['Verkehrsrechtliche Anordnung/Einsatz an Straße']),
-  absperrung:        pick(['Absperrung']),
-  helfer:            pick(['Posten - wie viele Helfer? ']),
-  psa:               pick(['Persönliche Schutzausrüstung geprüft/getragen? ']),
-  psaNote:           pick(['Bemerkungen zu Schutzausrüstung: ']),
-  zufahrt:           pick(['Zufahrt für Maschinen möglich? ']),
-  // Falls der Form-Key abweicht, hier anpassen:
-  maschinen:         Array.isArray(d.Maschintyp) ? d.Maschintyp : (d.Maschintyp ? [d.Maschintyp] : []),
-  maschinenbediener: pick(['Maschinenbediener: '], '—'),
-  gefaehrdungen:     Array.isArray(d['Besondere Gefährdungen:']) ? d['Besondere Gefährdungen:'] : [],
-  massnahmen:        pick(['Maßnahmen bei besonderer Gefährdung eingeleitet?']),
-  unterwiesen:       pick(['Im Trupp/Arbeitsgruppe  unterwiesen?']),
-};
-
-// Zustimmung
-const zustimmung = Array.isArray(d['Zustimmung:'])
-  ? d['Zustimmung:'].join(', ')
-  : pick(['Zustimmung:', 'Zustimmung'], '—');
-
-// Wetter (OpenWeatherMap)
-const wetter = {
-  beschreibung: d.weather?.[0]?.description ?? '—',
-  temp:         d.main?.temp ?? '—',
-  druck:        d.main?.pressure ?? '—',
-  wind:         d.wind?.speed ?? '—',
-  wolken:       d.clouds?.all ?? '—',
-};
-
-// Rettungspunkte & GPS
-const rp = Array.isArray(d.top_3_rettungspunkte) ? d.top_3_rettungspunkte : [];
-const gps = {
-  lat: pick(['Standortdaten - latitude (erster Wert in GoogleMaps)', 'lat', 'latitude'], ''),
-  lon: pick(['Standortdaten - longitude (zweiter Wert in GoogleMaps)', 'lon', 'longitude'], ''),
-};
-const mapsUrl = (gps.lat && gps.lon)
-  ? `https://www.google.com/maps?q=${encodeURIComponent(`${gps.lat},${gps.lon}`)}`
-  : null;
-
-// === HTML-Helper ===
-const esc = (v) => String(v ?? '')
-  .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-  .replace(/"/g,'&quot;').replace(/'/g,'&#039;');
-
-const chip  = (t) => `<span class="chip">${esc(t)}</span>`;
-
-// FIX: war abgeschnitten → jetzt korrekt geschlossen
-const chips = (arr = []) => (
-  arr.length
-    ? `<div class="chips">${arr.map(chip).join('')}</div>`
-    : '<span class="muted">—</span>'
-);
-
->>>>>>> 918e344ed8e380c9edefabf207d2f0ce60ba40a4
 // === Logos als Data-URLs (klein & inline) ===
 const LOGO_RYZEUP = 'data:image/png;base64,' +
   'iVBORw0KGgoAAAANSUhEUgAAAfIAAACCCAYAAAC9xEqlAABGaUlEQVR4Xu29d3RTRxf2y3/f/e5N' +
@@ -4575,7 +4454,6 @@ const LOGO_AUFTRAG = 'data:image/png;base64,' +
   'CEAAAhCAAAQgAAEIQAACEIBARwL/H/NpXxCLeoZLAAAAAElFTkSuQmCC' +
   '';
 
-<<<<<<< HEAD
 // Forstauftrag PDF-Generator (Gotenberg/Chromium)
 // 1) Liest n8n-Itemdaten (Form + Zusatzdaten)
 // 2) Erzeugt Header/Footer (Chromium-Seitenränder) und HTML
@@ -4700,8 +4578,6 @@ const chips = (arr = []) => (
     : '<span class="muted">—</span>'
 );
 
-=======
->>>>>>> 918e344ed8e380c9edefabf207d2f0ce60ba40a4
 // === BODY HTML ===
 const html = `<!doctype html>
 <html lang="de">
@@ -4713,7 +4589,6 @@ const html = `<!doctype html>
   :root{
     --bg:#0c1512; --surface:#12211a; --surface-2:#0e1b15; --card:#12261c;
     --brand-1:#10b981; --brand-2:#34d399; --text:#e6f2ec; --muted:#9fb3aa;
-<<<<<<< HEAD
     --border:#0dde81; --warn:#f59e0b; --ok:#22c55e; --chip-bg:#5b7d71;
     /* Platz im Body – unabhängig von Chromium-Header/Footer */
     --top-gap: 0mm; --bottom-gap: 0mm;
@@ -4754,35 +4629,6 @@ const html = `<!doctype html>
          
   .card .card-h{ padding:5mm 7mm 4mm; font-weight:700; letter-spacing:.3px; border
   bottom:1px solid var(--border); }
-=======
-    --border:#1f3a2e; --warn:#f59e0b; --ok:#22c55e; --chip-bg:#0f3326;
-    /* Platz im Body – unabhängig von Chromium-Header/Footer */
-    --top-gap: 24mm; --bottom-gap: 30mm;
-  }
-  @page { size:A4; margin:0; }
-  html, body { height:100%; }
-  * { box-sizing:border-box; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
-  body{
-    margin:0; background:var(--bg); color:var(--text);
-    font: 11pt/1.55 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-  }
-  .page{
-    width:210mm; min-height:297mm; margin:auto; background:var(--surface);
-    display:grid; grid-template-rows:auto 1fr auto;
-    padding: var(--top-gap) 20px var(--bottom-gap);
-  }
-  .header{
-    background: linear-gradient(135deg, var(--brand-1), var(--brand-2));
-    color:#05110d; border-radius:10px; padding:5mm 7mm; margin-bottom:7mm;
-  }
-  .header h1{ margin:0 0 2mm; font-size:18pt; letter-spacing:.2px; }
-  .header .sub{ margin:0; opacity:.85; }
-  .meta{ margin-top:2mm; display:flex; gap:6mm; flex-wrap:wrap; font-size:10pt; color:#052017; font-weight:600; }
-  .content{ display:block; }
-  .card{ background:var(--card); border:1px solid var(--border); border-radius:12px; margin:12px 0;
-         overflow:hidden; box-shadow:0 8px 24px rgba(0,0,0,.23); page-break-inside:avoid; break-inside:avoid-page; }
-  .card .card-h{ padding:5mm 7mm 4mm; font-weight:700; letter-spacing:.3px; border-bottom:1px solid var(--border); }
->>>>>>> 918e344ed8e380c9edefabf207d2f0ce60ba40a4
   .card .card-b{ padding:4mm 5mm; }
   .card[class*='card--']{ border-left:4px solid var(--accent); }
   .card[class*='card--'] .card-h{ background:var(--accent); color:#05110d; }
@@ -4965,7 +4811,6 @@ const html = `<!doctype html>
 </html>
 `;
 
-<<<<<<< HEAD
 // Header-Template
 const headerTemplate = `
   <style>${hcss}</style>
@@ -4983,20 +4828,6 @@ const headerTemplate = `
       </div>
     </div>
     <div class="muted">Einsatzort: ${esc(meta.einsatzort || '—')} · ${esc(now)}</div>
-=======
-// === CHROMIUM HEADER (separate Vorlage für Gotenberg) ===
-// FIX: meta.einsatzort verwenden
-const headerTemplate = `
-  <style>${hcss}</style>
-  <div class="wrap">
-    <div class="row">
-      <div class="logos">
-        ${THEME.logoLeft ? `<img src="${THEME.logoLeft}" alt="Logo"/>` : ''}
-        <strong>Arbeitsauftrag</strong>
-      </div>
-      <div class="muted">${esc(meta.einsatzort || '—')} · ${esc(now)}</div>
-    </div>
->>>>>>> 918e344ed8e380c9edefabf207d2f0ce60ba40a4
   </div>
 `;
 
@@ -5006,11 +4837,7 @@ const footerTemplate = `
   <div class="wrap">
     <div class="row">
       <div class="col">
-<<<<<<< HEAD
         ${THEME.logoLeft ? `<img src="${THEME.logoLeft}" alt="Logo"/>` : ''}
-=======
-        ${THEME.logoRight ? `<img src="${THEME.logoRight}" alt="Logo"/>` : ''}
->>>>>>> 918e344ed8e380c9edefabf207d2f0ce60ba40a4
         <strong>Ryzeup UG</strong>
         <span>Rotthang 3, 84494 Neumarkt-Sankt Veit</span>
         <span>HRB 33167, AG Traunstein</span>
@@ -5031,17 +4858,10 @@ const footerTemplate = `
 const printOptions = {
   paperWidth:  8.27,  // A4 in Inch
   paperHeight: 11.69, // A4 in Inch
-<<<<<<< HEAD
-  marginTop:    0.85,  // ~22 mm
-  marginBottom: 0.53,  // ~14 mm
-  marginLeft:   0.05, //  1.5 mm
-  marginRight:  0, //  0 mm
-=======
-  marginTop:    0.6,  // ~15 mm
-  marginBottom: 0.6,  // ~15 mm
-  marginLeft:   0.39, // 10 mm
-  marginRight:  0.39, // 10 mm
->>>>>>> 918e344ed8e380c9edefabf207d2f0ce60ba40a4
+  marginTop:    0.85,  // ~15 mm
+  marginBottom: 0.53,  // ~15 mm
+  marginLeft:   0.05, // 10 mm
+  marginRight:  0, // 10 mm
   printBackground: true,
   scale: 1,
 };
@@ -5055,8 +4875,4 @@ return {
     footerTemplate,
     printOptions
   }
-<<<<<<< HEAD
 };
-=======
-};
->>>>>>> 918e344ed8e380c9edefabf207d2f0ce60ba40a4
