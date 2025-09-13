@@ -26,11 +26,13 @@ Dieses Projekt erzeugt aus Web-Formularen (inkl. optionaler GPS-Daten) strukturi
 
 ## Architektur
 Browser (index.html)
+```
 └─► n8n Form (HTTP Form Trigger)
 ├─ Daten anreichern (GPS → Rettungspunkte, Wetter)
 ├─ HTML/Head/Foot im Code-Node generieren
 ├─ Gotenberg: Chromium HTML→PDF
 └─ Ausgabe: Datei + Google Sheet + Notification
+```
 
 - **Frontend**: `index.html` als Einstiegsseite (Entscheidung zu GPS).
 - **n8n**: Workflow-Knoten inkl. `Code`, `Move Binary Data`, `HTTP Request (Gotenberg)`, `Append Row`.
