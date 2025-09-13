@@ -26,6 +26,7 @@ Dieses Projekt erzeugt aus Web-Formularen (inkl. optionaler GPS-Daten) strukturi
 
 ## Architektur
 Browser (index.html)
+
 └─► n8n Form (HTTP Form Trigger)
 ├─ Daten anreichern (GPS → Rettungspunkte, Wetter)
 ├─ HTML/Head/Foot im Code-Node generieren
