@@ -17,8 +17,8 @@
       "type": "n8n-nodes-base.moveBinaryData",
       "typeVersion": 1.1,
       "position": [
-        -768,
-        144
+        -1040,
+        48
       ],
       "id": "dcd9be87-d2ed-48f2-9bfd-7e27c9372639",
       "name": "Move Binary Data (HTML file)"
@@ -235,21 +235,14 @@
               "requiredField": true
             },
             {
-              "fieldLabel": "Standortdaten - latitude (erster Wert in GoogleMaps)",
-              "fieldType": "number",
-              "placeholder": "48.098726",
-              "requiredField": true
+              "fieldName": "Standortdaten - latitude (erster Wert in GoogleMaps)",
+              "fieldType": "hiddenField",
+              "fieldValue": "={{ $json[\"Standortdaten - latitude (erster Wert in GoogleMaps)\"] }}"
             },
             {
-              "fieldLabel": "Standortdaten - longitude (zweiter Wert in GoogleMaps)",
-              "fieldType": "number",
-              "placeholder": "11.974201 ",
-              "requiredField": true
-            },
-            {
-              "fieldLabel": "jo",
-              "fieldType": "file",
-              "multipleFiles": false
+              "fieldName": "Standortdaten - longitude (zweiter Wert in GoogleMaps)",
+              "fieldType": "hiddenField",
+              "fieldValue": "={{ $json[\"Standortdaten - longitude (zweiter Wert in GoogleMaps)\"] }}"
             }
           ]
         },
@@ -260,8 +253,8 @@
       "type": "n8n-nodes-base.form",
       "typeVersion": 1,
       "position": [
-        -2784,
-        -368
+        -3280,
+        -608
       ],
       "id": "2ad4df81-bf43-4daa-869d-854d2fa91671",
       "name": "Form1",
@@ -305,14 +298,6 @@
             {
               "fieldLabel": "Ersthelfer vor Ort: ",
               "placeholder": "Wer leistet erste Hilfe bei Unfällen? "
-            },
-            {
-              "fieldName": "Rettungspunkt",
-              "fieldType": "hiddenField"
-            },
-            {
-              "fieldName": "Witterung",
-              "fieldType": "hiddenField"
             }
           ]
         },
@@ -324,8 +309,8 @@
       "type": "n8n-nodes-base.formTrigger",
       "typeVersion": 2.2,
       "position": [
-        -3008,
-        -272
+        -3840,
+        -592
       ],
       "id": "e27ee8c0-a79d-4b1b-af4a-7b5934d8091b",
       "name": "On form submission1",
@@ -341,8 +326,8 @@
       "type": "n8n-nodes-base.form",
       "typeVersion": 1,
       "position": [
-        -2560,
-        -272
+        -2880,
+        -432
       ],
       "id": "2b6bfafb-3c9e-4657-a0e6-ededa954b90d",
       "name": "Form3",
@@ -359,22 +344,22 @@
             {
               "keyName": "wgs_breite",
               "condition": "gte",
-              "keyValue": "={{ $json['Standortdaten - latitude (erster Wert in GoogleMaps)'] - 0.1 }}"
+              "keyValue": "={{ Number(String($json[\"Standortdaten - latitude (erster Wert in GoogleMaps)\"]).replace(',', '.')) - 0.1 }}"
             },
             {
               "keyName": "wgs_breite",
               "condition": "lte",
-              "keyValue": "={{ $json['Standortdaten - latitude (erster Wert in GoogleMaps)'] + 0.1 }}"
+              "keyValue": "={{ Number(String($json[\"Standortdaten - latitude (erster Wert in GoogleMaps)\"]).replace(',', '.')) + 0.1 }}"
             },
             {
               "keyName": "wgs_laenge",
               "condition": "lte",
-              "keyValue": "={{ $json['Standortdaten - longitude (zweiter Wert in GoogleMaps)'] + 0.1 }}"
+              "keyValue": "={{ Number(String($json[\"Standortdaten - longitude (zweiter Wert in GoogleMaps)\"]).replace(',', '.')) + 0.1 }}"
             },
             {
               "keyName": "wgs_laenge",
               "condition": "gte",
-              "keyValue": "={{ $json['Standortdaten - longitude (zweiter Wert in GoogleMaps)'] - 0.1 }}"
+              "keyValue": "={{ Number(String($json[\"Standortdaten - longitude (zweiter Wert in GoogleMaps)\"]).replace(',', '.')) - 0.1 }}"
             }
           ]
         }
@@ -382,8 +367,8 @@
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        -2336,
-        -96
+        -2624,
+        -448
       ],
       "id": "c9309ae1-8fa6-4518-8993-4a6a07bb486e",
       "name": "Get many rows1",
@@ -397,15 +382,15 @@
     {
       "parameters": {
         "locationSelection": "coordinates",
-        "latitude": "={{ $('Form1').item.json['Standortdaten - latitude (erster Wert in GoogleMaps)'] }}",
-        "longitude": "={{ $('Form1').item.json['Standortdaten - longitude (zweiter Wert in GoogleMaps)'] }}",
+        "latitude": "={{ $json[\"Standortdaten - latitude (erster Wert in GoogleMaps)\"] }}",
+        "longitude": "={{ $json[\"Standortdaten - longitude (zweiter Wert in GoogleMaps)\"] }}",
         "language": "de"
       },
       "type": "n8n-nodes-base.openWeatherMap",
       "typeVersion": 1,
       "position": [
-        -2336,
-        -288
+        -2608,
+        -224
       ],
       "id": "deaf38ea-7fc1-42db-a187-21282caaf35b",
       "name": "OpenWeatherMap1",
@@ -486,8 +471,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -544,
-        144
+        -816,
+        48
       ],
       "id": "95c1ad08-48a9-4d09-8b0d-a2238f0b1f0f",
       "name": "HTML → PDF (Gotenberg)1"
@@ -502,14 +487,15 @@
             "attachmentsBinary": [
               {}
             ]
-          }
+          },
+          "senderName": "forstauftrag-online"
         }
       },
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2,
       "position": [
-        -96,
-        144
+        -368,
+        48
       ],
       "id": "c9926257-b37d-4c93-9533-767de812816e",
       "name": "Send a message1",
@@ -551,8 +537,8 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        -1664,
-        -368
+        -1936,
+        -512
       ],
       "id": "8494ed31-cf4f-4eb6-af30-da3f3efda239",
       "name": "Append row in sheet",
@@ -573,8 +559,8 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        -1888,
-        -320
+        -2160,
+        -464
       ],
       "id": "ea109995-c483-4f85-b450-3c49c69b5f68",
       "name": "Merge2"
@@ -583,42 +569,27 @@
       "parameters": {
         "mode": "combine",
         "combineBy": "combineByPosition",
+        "numberInputs": 4,
         "options": {}
       },
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        -2112,
-        -416
+        -2400,
+        -816
       ],
       "id": "f68094ef-da84-4f00-826a-cc429a42a6ec",
       "name": "Merge1"
     },
     {
       "parameters": {
-        "mode": "combine",
-        "combineBy": "combineByPosition",
-        "numberInputs": 3,
-        "options": {}
-      },
-      "type": "n8n-nodes-base.merge",
-      "typeVersion": 3.2,
-      "position": [
-        -2336,
-        -544
-      ],
-      "id": "3d1345bc-6f9b-4379-b96f-a351e7042793",
-      "name": "Merge0"
-    },
-    {
-      "parameters": {
-        "jsCode": "const latitude = parseFloat($('Form3').first().json['Standortdaten - latitude (erster Wert in GoogleMaps)']);\nconst longitude = parseFloat($('Form3').first().json['Standortdaten - longitude (zweiter Wert in GoogleMaps)']);\nconst rettungspunkte = $items();\n\nfunction distance(lat1, lon1, lat2, lon2) {\n  const R = 6371e3;\n  const toRad = deg => deg * (Math.PI / 180);\n  const dLat = toRad(lat2 - lat1);\n  const dLon = toRad(lon2 - lon1);\n  const a = Math.sin(dLat / 2) ** 2 +\n            Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *\n            Math.sin(dLon / 2) ** 2;\n  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));\n  return R * c;\n}\n\nconst distanzArray = rettungspunkte.map(punkt => {\n  const dist = distance(latitude, longitude, punkt.json.wgs_breite, punkt.json.wgs_laenge);\n  return {\n    rp_nr: punkt.json.rp_nr,\n    entfernung_m: Math.round(dist),\n    lat: punkt.json.wgs_breite,\n    lon: punkt.json.wgs_laenge,\n    id: punkt.json.id,\n    beschreibung: punkt.json.beschreibung,\n    bundesland: punkt.json.bundesland\n  };\n});\n\nconst top3 = distanzArray.sort((a, b) => a.entfernung_m - b.entfernung_m).slice(0, 3);\n\nreturn [\n  {\n    json: {\n      gps_ursprung: { latitude, longitude },\n      top_3_rettungspunkte: top3\n    }\n  }\n];\n"
+        "jsCode": "// Mode: Run Once For All Items\n// 1) GPS-Quelle: das erste Item von Form3 (oder Form1, wenn dir lieber)\nconst form = $('Form3').first().json;\n// alternativ: const form = $('Form1').first().json;\n\nconst latStr = form['Standortdaten - latitude (erster Wert in GoogleMaps)'];\nconst lonStr = form['Standortdaten - longitude (zweiter Wert in GoogleMaps)'];\n\nconst latitude  = Number.parseFloat(String(latStr).replace(',', '.'));\nconst longitude = Number.parseFloat(String(lonStr).replace(',', '.'));\n\nif (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {\n  // Flow nicht hart abbrechen: leere Struktur zurückgeben\n  return [{ json: { gps_ursprung: null, top_3_rettungspunkte: [], naechster_rettungspunkt: null } }];\n}\n\n// 2) Rettungspunkte kommen als Items vom Supabase-Node\nconst rettungspunkte = $items();\n\n// 3) Haversine – saubere, getestete Version (Meter)\nfunction distM(lat1, lon1, lat2, lon2) {\n  const R = 6371e3, toRad = d => d * Math.PI / 180;\n  const φ1 = toRad(lat1), φ2 = toRad(lat2);\n  const Δφ = toRad(lat2 - lat1), Δλ = toRad(lon2 - lon1);\n  const a = Math.sin(Δφ/2)**2 + Math.cos(φ1)*Math.cos(φ2)*Math.sin(Δλ/2)**2;\n  return 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)) * R;\n}\n\n// 4) Distanzen berechnen\nconst list = rettungspunkte.map(p => {\n  const latP = Number.parseFloat(p.json.wgs_breite);\n  const lonP = Number.parseFloat(p.json.wgs_laenge);\n  if (!Number.isFinite(latP) || !Number.isFinite(lonP)) return null;\n  const m = Math.round(distM(latitude, longitude, latP, lonP));\n  return {\n    rp_nr: p.json.rp_nr,\n    entfernung_m: m,\n    entfernung_text: m < 1000 ? `${m} m` : `${(m/1000).toFixed(2)} km`,\n    lat: latP, lon: lonP,\n    id: p.json.id,\n    beschreibung: p.json.beschreibung,\n    bundesland: p.json.bundesland,\n  };\n}).filter(Boolean);\n\nif (!list.length) {\n  return [{ json: { gps_ursprung: { latitude, longitude }, top_3_rettungspunkte: [], naechster_rettungspunkt: null } }];\n}\n\nconst top3 = list.sort((a,b) => a.entfernung_m - b.entfernung_m).slice(0,3);\n\nreturn [{\n  json: {\n    gps_ursprung: { latitude, longitude },\n    top_3_rettungspunkte: top3,\n    naechster_rettungspunkt: top3[0],\n  }\n}];\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -2112,
-        -96
+        -2384,
+        -336
       ],
       "id": "d07bcea4-a03c-40c2-8baf-d15c425f0f1d",
       "name": "Harvesine"
@@ -639,8 +610,8 @@
       "type": "n8n-nodes-base.moveBinaryData",
       "typeVersion": 1.1,
       "position": [
-        -1216,
-        144
+        -1488,
+        48
       ],
       "id": "1493e62f-5438-48d9-ae41-f85b239565ac",
       "name": "header"
@@ -661,8 +632,8 @@
       "type": "n8n-nodes-base.moveBinaryData",
       "typeVersion": 1.1,
       "position": [
-        -992,
-        144
+        -1264,
+        48
       ],
       "id": "c526a981-ea31-444e-8c90-0caa5d6c071f",
       "name": "footer"
@@ -674,8 +645,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -1888,
-        192
+        -2368,
+        96
       ],
       "id": "f310642f-5078-4848-9d3e-244afcb8d060",
       "name": "logo-names"
@@ -688,8 +659,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -1440,
-        144
+        -1712,
+        48
       ],
       "id": "b7ed8196-7d6a-4bd1-b494-d1d344be3a33",
       "name": "pdf-template.js"
@@ -709,8 +680,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -2784,
-        80
+        -3264,
+        -64
       ],
       "id": "f5441e08-bba1-40b7-9434-9a43a11db389",
       "name": "ryzeup-logo",
@@ -733,8 +704,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -2336,
-        256
+        -2816,
+        144
       ],
       "id": "f41c5b17-89b5-4a48-83b3-5ebdaecc2072",
       "name": "fa-logo"
@@ -744,14 +715,14 @@
         "mode": "combine",
         "combineBy": "combineByPosition",
         "options": {
-          "includeUnpaired": true
+          "includeUnpaired": false
         }
       },
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        -1664,
-        144
+        -1936,
+        48
       ],
       "id": "fa078c5e-93ec-4b73-bb4c-7ce4740c165f",
       "name": "data+logos"
@@ -771,8 +742,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -2784,
-        272
+        -3264,
+        144
       ],
       "id": "019b374a-d1c8-420e-ba5f-f72e77445386",
       "name": "Bg-logo"
@@ -786,8 +757,8 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        -2112,
-        192
+        -2592,
+        96
       ],
       "id": "8c559737-c6b1-484d-b00f-923bd4b510f2",
       "name": "merge-logos"
@@ -801,8 +772,8 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        -2560,
-        192
+        -3040,
+        96
       ],
       "id": "14885d29-eace-435b-8379-96b16f447ab3",
       "name": "MergeA"
@@ -814,92 +785,57 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -320,
-        144
+        -592,
+        48
       ],
       "id": "2785efee-73e8-41f0-a14d-c4231615580a",
       "name": "pdf-filename"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Query params ziehen\nconst q = $json.query || $json;\nlet lat = q.lat ?? q.latitude ?? null;\nlet lon = q.lon ?? q.longitude ?? null;\n\n// === TEST-FALLBACK ===\n// greift NUR, wenn a) keine Koordinaten da sind UND b) noGeo=1 ODER Form im Testmodus ist\nconst isTest = String($json.formMode || '').toLowerCase() === 'test';\nif ((lat == null || lon == null) && (q.noGeo === '1' || isTest)) {\n  // München Marienplatz: 48.137154, 11.576124 (nur fürs Testen!)\n  lat = '48.137154';\n  lon = '11.576124';\n  $json.geo_source = 'fallback';   // Meta fürs Debug/Sheet\n}\n\nif (lat != null && lon != null) {\n  $json['Standortdaten - latitude (erster Wert in GoogleMaps)']  = String(lat);\n  $json['Standortdaten - longitude (zweiter Wert in GoogleMaps)'] = String(lon);\n}\n\nif (q.einsatzort) $json['Einsatzort'] = String(q.einsatzort);\nreturn item;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3456,
+        -608
+      ],
+      "id": "bbda2381-14f3-47ff-9537-74b93fe0fc32",
+      "name": "pull-query-to-json"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "29789d18-8ea3-456b-8369-5bea39bd3d2e",
+              "name": "Standortdaten - latitude (erster Wert in GoogleMaps)",
+              "value": "={{ $json[\"Standortdaten - latitude (erster Wert in GoogleMaps)\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "6aec88c8-a769-4d67-94d1-f02e0c8865f2",
+              "name": "Standortdaten - longitude (zweiter Wert in GoogleMaps)",
+              "value": "={{ $json[\"Standortdaten - longitude (zweiter Wert in GoogleMaps)\"] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3088,
+        -480
+      ],
+      "id": "0319143f-8c5e-4e18-a87b-07649676da9b",
+      "name": "geo-set"
     }
   ],
-  "pinData": {
-    "Form1": [
-      {
-        "json": {
-          "Verkehrsrechtliche Anordnung/Einsatz an Straße": "nein",
-          "Absperrung": "keine",
-          "Posten - wie viele Helfer? ": "0 - keine notwendig",
-          "Persönliche Schutzausrüstung geprüft/getragen? ": "ja",
-          "Bemerkungen zu Schutzausrüstung: ": "",
-          "Zufahrt für Maschinen möglich? ": "ja",
-          "Maschintyp": [
-            "Harvester"
-          ],
-          "Maschinenbediener: ": "Rusmir",
-          "Besondere Gefährdungen:": [
-            "Schlechte Sicht",
-            "Wind"
-          ],
-          "Maßnahmen bei besonderer Gefährdung eingeleitet?": "ja",
-          "Im Trupp/Arbeitsgruppe  unterwiesen?": "nein",
-          "Zustimmung:": [
-            "Ich bestätige die Richtigkeit meiner Angaben und bin mit der Verarbeitung einverstanden."
-          ],
-          "Standortdaten - latitude (erster Wert in GoogleMaps)": 48.106048,
-          "Standortdaten - longitude (zweiter Wert in GoogleMaps)": 11.945097,
-          "jo": null,
-          "submittedAt": "2025-07-03T14:58:45.805+02:00",
-          "formMode": "test"
-        }
-      }
-    ],
-    "On form submission1": [
-      {
-        "json": {
-          "Datum Arbeitstag: ": "2025-06-22",
-          "Einsatzort": "Ebersberg",
-          "Arbeitsverantwortlicher": "Rusmir",
-          "weitere Einsatzkräfte:": "keiner",
-          "Ansprechpartner Kunde: ": "Fritz Holzer",
-          "Kunde Telefon: ": 0,
-          "Ersthelfer vor Ort: ": "Rusmir",
-          "Rettungspunkt": "",
-          "Witterung": "",
-          "submittedAt": "2025-06-22T20:56:04.410+02:00",
-          "formMode": "test"
-        }
-      }
-    ],
-    "Form3": [
-      {
-        "json": {
-          "Verkehrsrechtliche Anordnung/Einsatz an Straße": "nein",
-          "Absperrung": "keine",
-          "Posten - wie viele Helfer? ": "0 - keine notwendig",
-          "Persönliche Schutzausrüstung geprüft/getragen? ": "ja",
-          "Bemerkungen zu Schutzausrüstung: ": "",
-          "Zufahrt für Maschinen möglich? ": "ja",
-          "Maschintyp": [
-            "Harvester"
-          ],
-          "Maschinenbediener: ": "Rusmir",
-          "Besondere Gefährdungen:": [
-            "Schlechte Sicht",
-            "Wind"
-          ],
-          "Maßnahmen bei besonderer Gefährdung eingeleitet?": "ja",
-          "Im Trupp/Arbeitsgruppe  unterwiesen?": "nein",
-          "Zustimmung:": [
-            "Ich bestätige die Richtigkeit meiner Angaben und bin mit der Verarbeitung einverstanden."
-          ],
-          "Standortdaten - latitude (erster Wert in GoogleMaps)": 48.106048,
-          "Standortdaten - longitude (zweiter Wert in GoogleMaps)": 11.945097,
-          "jo": null,
-          "submittedAt": "2025-07-03T14:58:45.805+02:00",
-          "formMode": "test"
-        }
-      }
-    ]
-  },
+  "pinData": {},
   "connections": {
     "Move Binary Data (HTML file)": {
       "main": [
@@ -916,14 +852,14 @@
       "main": [
         [
           {
-            "node": "Form3",
+            "node": "geo-set",
             "type": "main",
             "index": 0
           },
           {
-            "node": "Merge0",
+            "node": "Merge1",
             "type": "main",
-            "index": 1
+            "index": 0
           }
         ]
       ]
@@ -931,16 +867,6 @@
     "On form submission1": {
       "main": [
         [
-          {
-            "node": "Form1",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Merge0",
-            "type": "main",
-            "index": 0
-          },
           {
             "node": "ryzeup-logo",
             "type": "main",
@@ -950,6 +876,16 @@
             "node": "Bg-logo",
             "type": "main",
             "index": 0
+          },
+          {
+            "node": "pull-query-to-json",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 3
           }
         ]
       ]
@@ -968,9 +904,9 @@
             "index": 0
           },
           {
-            "node": "Merge0",
+            "node": "Merge1",
             "type": "main",
-            "index": 2
+            "index": 1
           }
         ]
       ]
@@ -992,7 +928,7 @@
           {
             "node": "Merge1",
             "type": "main",
-            "index": 0
+            "index": 2
           }
         ]
       ]
@@ -1031,17 +967,6 @@
             "node": "Merge2",
             "type": "main",
             "index": 0
-          }
-        ]
-      ]
-    },
-    "Merge0": {
-      "main": [
-        [
-          {
-            "node": "Merge1",
-            "type": "main",
-            "index": 1
           }
         ]
       ]
@@ -1182,13 +1107,35 @@
           }
         ]
       ]
+    },
+    "pull-query-to-json": {
+      "main": [
+        [
+          {
+            "node": "Form1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "geo-set": {
+      "main": [
+        [
+          {
+            "node": "Form3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
-  "active": false,
+  "active": true,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "65ea1c40-9631-4f26-a001-c9a21de13ced",
+  "versionId": "189206c5-6a52-4cb0-ba11-d80ea7edcbe8",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "2a3eab6b88b8510864f912a25810c5ba12780e3df16b467154212c331aaa0bdb"
