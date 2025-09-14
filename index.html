@@ -120,14 +120,44 @@
     button.secondary{background:#fff;color:var(--brand)}
     #msg{margin-top:8px;color:#b45309}
     .actions{display:none;gap:10px;flex-wrap:wrap;margin-top:12px}
+
+    /* Header: responsive Logos */
+.brand-logos{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:clamp(0.5rem, 4vw, 3rem);
+  padding:clamp(0.75rem, 3vw, 2rem);
+  flex-wrap:wrap;                /* Logos dürfen umbrechen */
+}
+
+/* Alle Logos skalieren proportional */
+.brand-logos img{
+  height:clamp(36px, 10vw, 80px);/* 36–80px, je nach Viewport */
+  width:auto;
+  max-width:40vw;                /* verhindert riesige Logos bei 2-Spalten-Wrap */
+  object-fit:contain;            /* sicher, falls SVG/PNG Mischmasch */
+}
+
+/* Sehr schmale Phones: Logos kleiner + enger */
+@media (max-width:420px){
+  .brand-logos{
+    gap:0.6rem;
+  }
+  .brand-logos img{
+    height:clamp(28px, 9vw, 56px);
+    max-width:80vw;              /* bei 1 Logo pro Zeile */
+  }
+}
+
   </style>
 </head>
 <body>
-  <header style="display: flex; justify-content: center; gap: 3rem; align-items: center; padding: 2rem;">
-    <img src="img/Bg-logo.png" alt="Berufsgenossenschaft" style="height: 80px;">
-    <img src="img/fa-logo.png" alt="forstauftrag" style="height: 80px;">
-    <img src="img/ryzeup-logo.png" alt="ryzeup" style="height: 80px;">
-  </header>
+  <header class="brand-logos">
+  <img src="img/Bg-logo.png" alt="Berufsgenossenschaft" loading="lazy" width="240" height="80">
+  <img src="img/fa-logo.png" alt="Forstauftrag" loading="lazy" width="240" height="80">
+  <img src="img/ryzeup-logo.png" alt="Ryzeup" loading="lazy" width="240" height="80">
+</header>
   <main>
     <div class="card">
       <h1>📝 Forstauftrag:</h1>
