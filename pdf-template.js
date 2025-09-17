@@ -34,10 +34,10 @@ const logoRightPrepared  = binToDataUrl.call(this, 'fa')     || d?.assets?.fa   
 // 2) THEME erst jetzt definieren – mit vorbereiteten Logos
 const THEME = {
   brandBg:    '#112240',
-  brandText:  '#ffffff',
+  brandText:  '#e6e1e1',
   bodyFont:   'Arial, Helvetica, sans-serif',
-  fontSizeH:  9,
-  fontSizeF:  8.5,
+  fontSizeH:  8,
+  fontSizeF:  8,
   padH:       '6px 12px',
   padF:       '4px 10px',
   linkGap:    '16px',
@@ -108,13 +108,21 @@ const zustimmung = Array.isArray(d['Zustimmung:'])
   : pick(['Zustimmung:', 'Zustimmung'], '—');
 
 // Wetter (OpenWeatherMap)
+// Wetter (OpenWeatherMap)
 const wetter = {
   beschreibung: d.weather?.[0]?.description ?? '—',
   temp:         d.main?.temp ?? '—',
   druck:        d.main?.pressure ?? '—',
   wind:         d.wind?.speed ?? '—',
   wolken:       d.clouds?.all ?? '—',
+  //Regenmenge in L/qm (1mm = 1 L/qm). Wenn kein Feld vorhanden: 0.
+  regen_lqm: (() => {
+    const v = d.rain?.['1h'] ?? d.rain?.['3h'] ?? 0;
+    const n = typeof v === 'number' ? v : Number(v);
+    return Number.isFinite(n) ? n : 0;
+  })(),
 };
+
 
 // Rettungspunkte & GPS
 const rp = Array.isArray(d.top_3_rettungspunkte) ? d.top_3_rettungspunkte : [];
@@ -160,19 +168,19 @@ const html = `<!doctype html>
   * { box-sizing:border-box; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
   body{margin:0;
     background:var(--bg); color:var(--text);
-    font: 11pt/1.55 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+    font: 9pt/1.4 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
   }
   .page{
     width:210mm; background:var(--surface);
     display:grid; grid-template-rows:auto 1fr auto;
-    padding: 0 20px 0 20px;
+    padding: 0px 20px;
   }
   .header{
     background: linear-gradient(135deg, var(--brand-1), var(--brand-2));
-    color:#05110d; border-radius:10px; padding:5mm 7mm; margin-bottom:6mm;
-    margin-top: 4mm;
+    color:#05110d; border-radius:10px; padding:4mm 6mm; margin-bottom:4mm;
+    margin-top: 2mm;
   }
-  .header h1{ margin:0 0 2mm; font-size:18pt; letter-spacing:.2px; }
+  .header h1{ margin:0 0 2mm; font-size:16pt; letter-spacing:.2px; }
   .header .sub{ margin:0; opacity:.85; }
   .meta{ margin-top:2mm; display:flex; gap:6mm; flex-wrap:wrap; font-size:10pt;
   color:#052017; font-weight:600; 
@@ -180,7 +188,9 @@ const html = `<!doctype html>
   .content{
   display: flex;               /* oder: display:grid */
   flex-direction: column;      /* bei grid nicht nötig */
-  row-gap: 6mm;                /* <— HIER stellst du den Card-Abstand ein */
+  row-gap: 4mm;/* <— HIER stellst du den Card-Abstand ein */
+  padding-bottom: 2mm;
+  padding-top: 2mm;
   }
   .card{ 
   background:var(--card); border:1px solid var(--border); 
@@ -189,8 +199,8 @@ const html = `<!doctype html>
   break-inside:avoid-page; 
   }
          
-  .card .card-h{ padding:5mm 7mm 4mm; font-weight:700; letter-spacing:.3px; border-bottom:1px solid var(--border); }
-  .card .card-b{ padding:4mm 5mm; }
+  .card .card-h{ padding:4mm 6mm 3mm; font-weight:600; letter-spacing:.3px; border-bottom:1px solid var(--border); }
+  .card .card-b{ padding:2.5mm 4mm; }
   .card[class*='card--']{ border-left:4px solid var(--accent); }
   .card[class*='card--'] .card-h{ background:var(--accent); color:#05110d; }
   .card--auftrag{ --accent:#34d399; }
@@ -202,17 +212,17 @@ const html = `<!doctype html>
   .grid{ display:flex; flex-wrap:wrap; gap:3mm 5mm; }
   .row{ display:flex; flex-direction:column; flex:1 1 calc(50% - 5mm); min-width:80mm; }
   .label{ font-size:10pt; color:var(--muted); text-transform:uppercase; letter-spacing:.35px; margin-bottom:1mm; }
-  .val{ font-size:13pt; font-weight:600; }
+  .val{ font-size:11pt; font-weight:600; }
   .yes{ color:var(--ok); } .no{ color:var(--warn); }
   .chips{ display:flex; flex-wrap:wrap; gap:4mm; margin-top:2mm; }
-  .chip{ background:var(--chip-bg); border:1px solid var(--border); padding:2.5mm 4mm; border-radius:999px; font-size:9.5pt; font-weight:700; color:var(--text); }
+  .chip{ background:var(--chip-bg); border:1px solid var(--border); padding:2.5mm 4mm; border-radius:999px; font-size:9pt; font-weight:700; color:var(--text); }
   .chip.hazard{ background:#3b1f0a; border-color:#7a3c11; color:#ffcc88; }
   .weather{ display:grid; grid-template-columns:repeat(5,1fr); gap:6mm; text-align:center; }
   .wbox{ background:var(--surface-2); border:1px solid var(--border); border-radius:10px; padding:6mm 4mm; }
-  .wval{ font-size:16pt; font-weight:800; color:var(--brand-2); margin-bottom:1mm; }
-  .wlab{ font-size:8.5pt; color:var(--muted); text-transform:uppercase; }
+  .wval{ font-size:14pt; font-weight:800; color:var(--brand-2); margin-bottom:1mm; }
+  .wlab{ font-size:8pt; color:var(--muted); text-transform:uppercase; }
   table.tbl{ width:100%; border-collapse:separate; border-spacing:0; background:var(--surface-2); border:1px solid var(--border); border-radius:10px; overflow:hidden; }
-  .tbl thead th{ background:#0f2b20; color:#c9f0e1; text-align:left; padding:4.5mm 5mm; font-size:10pt; border-bottom:1px solid var(--border); }
+  .tbl thead th{ background:#0f2b20; color:#c9f0e1; text-align:left; padding:4.5mm 5mm; font-size:9pt; border-bottom:1px solid var(--border); }
   .tbl td{ padding:4mm 5mm; border-bottom:1px solid var(--border); }
   .tbl tr:last-child td{ border-bottom:0; }
   .td-num{ text-align:right; font-weight:700; color:var(--brand-2); }
@@ -227,7 +237,10 @@ const html = `<!doctype html>
   @media screen and (max-width:900px){
     .grid{ flex-direction:column; }
     .row{ flex-basis:100%; }
+    .weather{ display:grid; grid-template-columns:repeat(3,1fr); gap:5mm; text-align:center; }
+   @media screen and (max-width:900px){
     .weather{ grid-template-columns: repeat(2, 1fr); }
+   }
   }
 </style>
 </head>
@@ -310,6 +323,7 @@ const html = `<!doctype html>
             <div class="wbox"><div class="wval">${esc(wetter.druck)} hPa</div><div class="wlab">Luftdruck</div></div>
             <div class="wbox"><div class="wval">${esc(wetter.wind)} m/s</div><div class="wlab">Wind</div></div>
             <div class="wbox"><div class="wval">${esc(wetter.wolken)} %</div><div class="wlab">Bewölkung</div></div>
+            <div class="wbox"><div class="wval">${esc(wetter.regen_lqm)} L/qm</div><div class="wlab">Niederschlag (letzte Std.)</div></div>
           </div>
         </div>
       </div>
@@ -341,17 +355,30 @@ const html = `<!doctype html>
       <div class="card card--gps">
         <div class="card-h">GPS-Standort</div>
         <div class="card-b">
-          <div class="gps">
-            <div class="label">Koordinaten</div>
-            <div class="coord">${esc(gps.lat || '—')}, ${esc(gps.lon || '—')}</div>
-            <div class="map">
-              ${
-                mapsUrl
-                  ? '<a href="' + esc(mapsUrl) + '">🗺️ Karte öffnen</a>'
-                  : '<span style="color:var(--muted)">Kein Kartenlink verfügbar</span>'
-              }
-            </div>
-          </div>
+         <div class="gps">
+<div class="label">Koordinaten</div>
+<div class="coord">
+${esc($json.gps_ursprung?.latitude ?? 'kein latitude/Breitengrad')},
+${esc($json.gps_ursprung?.longitude ?? 'keine longitude/Längengrad')}
+</div>
+</div>
+
+<div class="map">
+${ $json.gps_ursprung?.maps?.gmaps
+? '<a href="' + esc($json.gps_ursprung.maps.gmaps) + '">🗺️ Google Maps öffnen</a>'
+: '<span style="color:var(--muted)">Kein Kartenlink verfügbar</span>'
+}
+<br/>
+${ $json.gps_ursprung?.maps?.osm
+? '<a href="' + esc($json.gps_ursprung.maps.osm) + '">🗺️ OpenStreetMap öffnen</a>'
+: ''
+}
+<br/>
+${ $json.gps_ursprung?.maps?.apple
+? '<a href="' + esc($json.gps_ursprung.maps.apple) + '">🗺️ Apple Maps öffnen</a>'
+: ''
+}
+</div>
         </div>
       </div>
 
@@ -419,9 +446,9 @@ const footerTemplate = `
 const printOptions = {
   paperWidth:  8.27,  // A4 in Inch
   paperHeight: 11.69, // A4 in Inch
-  marginTop:    0.85,  // ~15 mm
-  marginBottom: 0.53,  // ~15 mm
-  marginLeft:   0.05, // 10 mm
+  marginTop:    0.83,  // ~15 mm
+  marginBottom: 0.67,  // ~15 mm
+  marginLeft:   0, // 10 mm
   marginRight:  0, // 10 mm
   printBackground: true,
   scale: 1,
