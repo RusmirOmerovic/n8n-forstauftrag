@@ -1,6 +1,6 @@
 # Forstauftrag – End-to-End Workflow (n8n → Gotenberg PDF)
 
-Dieses Projekt erzeugt aus Web-Formularen (inkl. optionaler GPS-Daten) strukturierte **Arbeitsaufträge als PDF**. Besonderheiten:
+Dieses Projekt erzeugt aus Web-Formularen (inkl. optionaler GPS-Daten zur automatischen Ermittlung von Rettungspunkten) strukturierte **Arbeitsaufträge als PDF**. Besonderheiten:
 - Nutzer wählen in `index.html`, ob und wie GPS geteilt wird.
 - n8n sammelt Formular- und Zusatzdaten (Wetter via OpenWeatherMap, Top-3 Rettungspunkte).
 - Gotenberg (Chromium) rendert das PDF inkl. **einheitlichem Header/Footer**.

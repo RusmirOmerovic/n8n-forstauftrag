@@ -17,8 +17,8 @@
       "type": "n8n-nodes-base.moveBinaryData",
       "typeVersion": 1.1,
       "position": [
-        -1040,
-        48
+        -1152,
+        -96
       ],
       "id": "dcd9be87-d2ed-48f2-9bfd-7e27c9372639",
       "name": "Move Binary Data (HTML file)"
@@ -253,12 +253,13 @@
       "type": "n8n-nodes-base.form",
       "typeVersion": 1,
       "position": [
-        -3280,
-        -608
+        -3392,
+        -672
       ],
       "id": "2ad4df81-bf43-4daa-869d-854d2fa91671",
       "name": "Form1",
-      "webhookId": "c9f15e3c-026b-49f5-99a1-2dfa3b8853e9"
+      "webhookId": "c9f15e3c-026b-49f5-99a1-2dfa3b8853e9",
+      "alwaysOutputData": false
     },
     {
       "parameters": {
@@ -310,7 +311,7 @@
       "typeVersion": 2.2,
       "position": [
         -3840,
-        -592
+        -576
       ],
       "id": "e27ee8c0-a79d-4b1b-af4a-7b5934d8091b",
       "name": "On form submission1",
@@ -326,8 +327,8 @@
       "type": "n8n-nodes-base.form",
       "typeVersion": 1,
       "position": [
-        -2880,
-        -432
+        -2944,
+        -544
       ],
       "id": "2b6bfafb-3c9e-4657-a0e6-ededa954b90d",
       "name": "Form3",
@@ -344,22 +345,22 @@
             {
               "keyName": "wgs_breite",
               "condition": "gte",
-              "keyValue": "={{ Number(String($json[\"Standortdaten - latitude (erster Wert in GoogleMaps)\"]).replace(',', '.')) - 0.1 }}"
+              "keyValue": "={{ Number($json.formQueryParameters.lat) - 0.1 }}"
             },
             {
               "keyName": "wgs_breite",
               "condition": "lte",
-              "keyValue": "={{ Number(String($json[\"Standortdaten - latitude (erster Wert in GoogleMaps)\"]).replace(',', '.')) + 0.1 }}"
+              "keyValue": "={{ Number($json.formQueryParameters.lat) + 0.1 }}"
             },
             {
               "keyName": "wgs_laenge",
               "condition": "lte",
-              "keyValue": "={{ Number(String($json[\"Standortdaten - longitude (zweiter Wert in GoogleMaps)\"]).replace(',', '.')) + 0.1 }}"
+              "keyValue": "={{ Number($json.formQueryParameters.lon) + 0.1 }}"
             },
             {
               "keyName": "wgs_laenge",
               "condition": "gte",
-              "keyValue": "={{ Number(String($json[\"Standortdaten - longitude (zweiter Wert in GoogleMaps)\"]).replace(',', '.')) - 0.1 }}"
+              "keyValue": "={{ Number($json.formQueryParameters.lon) - 0.1 }}"
             }
           ]
         }
@@ -367,8 +368,8 @@
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
       "position": [
-        -2624,
-        -448
+        -2720,
+        -544
       ],
       "id": "c9309ae1-8fa6-4518-8993-4a6a07bb486e",
       "name": "Get many rows1",
@@ -382,24 +383,26 @@
     {
       "parameters": {
         "locationSelection": "coordinates",
-        "latitude": "={{ $json[\"Standortdaten - latitude (erster Wert in GoogleMaps)\"] }}",
-        "longitude": "={{ $json[\"Standortdaten - longitude (zweiter Wert in GoogleMaps)\"] }}",
+        "latitude": "={{ $('On form submission1').item.json.formQueryParameters.lat }}",
+        "longitude": "={{ $('On form submission1').item.json.formQueryParameters.lon }}",
         "language": "de"
       },
       "type": "n8n-nodes-base.openWeatherMap",
       "typeVersion": 1,
       "position": [
-        -2608,
-        -224
+        -2720,
+        -352
       ],
       "id": "deaf38ea-7fc1-42db-a187-21282caaf35b",
       "name": "OpenWeatherMap1",
+      "notesInFlow": false,
       "credentials": {
         "openWeatherMapApi": {
           "id": "CWbJ42ss1QeH9GUK",
           "name": "OpenWeatherMap account"
         }
-      }
+      },
+      "onError": "continueRegularOutput"
     },
     {
       "parameters": {
@@ -471,8 +474,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -816,
-        48
+        -928,
+        -96
       ],
       "id": "95c1ad08-48a9-4d09-8b0d-a2238f0b1f0f",
       "name": "HTML → PDF (Gotenberg)1"
@@ -487,15 +490,14 @@
             "attachmentsBinary": [
               {}
             ]
-          },
-          "senderName": "forstauftrag-online"
+          }
         }
       },
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2,
       "position": [
-        -368,
-        48
+        -480,
+        -96
       ],
       "id": "c9926257-b37d-4c93-9533-767de812816e",
       "name": "Send a message1",
@@ -509,58 +511,17 @@
     },
     {
       "parameters": {
-        "operation": "append",
-        "documentId": {
-          "__rl": true,
-          "value": "1B56Kah2t7Dz84usjQfQNnefK3R2rgQGO0H2hRndCtzc",
-          "mode": "list",
-          "cachedResultName": "auftragsdaten",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1B56Kah2t7Dz84usjQfQNnefK3R2rgQGO0H2hRndCtzc/edit?usp=drivesdk"
-        },
-        "sheetName": {
-          "__rl": true,
-          "value": "gid=0",
-          "mode": "list",
-          "cachedResultName": "Tabellenblatt1",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1B56Kah2t7Dz84usjQfQNnefK3R2rgQGO0H2hRndCtzc/edit#gid=0"
-        },
-        "columns": {
-          "mappingMode": "autoMapInputData",
-          "value": {},
-          "matchingColumns": [],
-          "schema": [],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": false
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.googleSheets",
-      "typeVersion": 4.7,
-      "position": [
-        -1936,
-        -512
-      ],
-      "id": "8494ed31-cf4f-4eb6-af30-da3f3efda239",
-      "name": "Append row in sheet",
-      "alwaysOutputData": false,
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "awTBm5n9jFsyxPvL",
-          "name": "Google Sheets rusmir-projects"
-        }
-      }
-    },
-    {
-      "parameters": {
         "mode": "combine",
         "combineBy": "combineByPosition",
-        "options": {}
+        "options": {
+          "includeUnpaired": true
+        }
       },
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        -2160,
-        -464
+        -2272,
+        -672
       ],
       "id": "ea109995-c483-4f85-b450-3c49c69b5f68",
       "name": "Merge2"
@@ -575,24 +536,11 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        -2400,
+        -2496,
         -816
       ],
       "id": "f68094ef-da84-4f00-826a-cc429a42a6ec",
       "name": "Merge1"
-    },
-    {
-      "parameters": {
-        "jsCode": "// Mode: Run Once For All Items\n// 1) GPS-Quelle: das erste Item von Form3 (oder Form1, wenn dir lieber)\nconst form = $('Form3').first().json;\n// alternativ: const form = $('Form1').first().json;\n\nconst latStr = form['Standortdaten - latitude (erster Wert in GoogleMaps)'];\nconst lonStr = form['Standortdaten - longitude (zweiter Wert in GoogleMaps)'];\n\nconst latitude  = Number.parseFloat(String(latStr).replace(',', '.'));\nconst longitude = Number.parseFloat(String(lonStr).replace(',', '.'));\n\nif (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {\n  // Flow nicht hart abbrechen: leere Struktur zurückgeben\n  return [{ json: { gps_ursprung: null, top_3_rettungspunkte: [], naechster_rettungspunkt: null } }];\n}\n\n// 2) Rettungspunkte kommen als Items vom Supabase-Node\nconst rettungspunkte = $items();\n\n// 3) Haversine – saubere, getestete Version (Meter)\nfunction distM(lat1, lon1, lat2, lon2) {\n  const R = 6371e3, toRad = d => d * Math.PI / 180;\n  const φ1 = toRad(lat1), φ2 = toRad(lat2);\n  const Δφ = toRad(lat2 - lat1), Δλ = toRad(lon2 - lon1);\n  const a = Math.sin(Δφ/2)**2 + Math.cos(φ1)*Math.cos(φ2)*Math.sin(Δλ/2)**2;\n  return 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)) * R;\n}\n\n// 4) Distanzen berechnen\nconst list = rettungspunkte.map(p => {\n  const latP = Number.parseFloat(p.json.wgs_breite);\n  const lonP = Number.parseFloat(p.json.wgs_laenge);\n  if (!Number.isFinite(latP) || !Number.isFinite(lonP)) return null;\n  const m = Math.round(distM(latitude, longitude, latP, lonP));\n  return {\n    rp_nr: p.json.rp_nr,\n    entfernung_m: m,\n    entfernung_text: m < 1000 ? `${m} m` : `${(m/1000).toFixed(2)} km`,\n    lat: latP, lon: lonP,\n    id: p.json.id,\n    beschreibung: p.json.beschreibung,\n    bundesland: p.json.bundesland,\n  };\n}).filter(Boolean);\n\nif (!list.length) {\n  return [{ json: { gps_ursprung: { latitude, longitude }, top_3_rettungspunkte: [], naechster_rettungspunkt: null } }];\n}\n\nconst top3 = list.sort((a,b) => a.entfernung_m - b.entfernung_m).slice(0,3);\n\nreturn [{\n  json: {\n    gps_ursprung: { latitude, longitude },\n    top_3_rettungspunkte: top3,\n    naechster_rettungspunkt: top3[0],\n  }\n}];\n"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        -2384,
-        -336
-      ],
-      "id": "d07bcea4-a03c-40c2-8baf-d15c425f0f1d",
-      "name": "Harvesine"
     },
     {
       "parameters": {
@@ -610,8 +558,8 @@
       "type": "n8n-nodes-base.moveBinaryData",
       "typeVersion": 1.1,
       "position": [
-        -1488,
-        48
+        -1600,
+        -96
       ],
       "id": "1493e62f-5438-48d9-ae41-f85b239565ac",
       "name": "header"
@@ -632,8 +580,8 @@
       "type": "n8n-nodes-base.moveBinaryData",
       "typeVersion": 1.1,
       "position": [
-        -1264,
-        48
+        -1376,
+        -96
       ],
       "id": "c526a981-ea31-444e-8c90-0caa5d6c071f",
       "name": "footer"
@@ -645,8 +593,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -2368,
-        96
+        -2720,
+        -48
       ],
       "id": "f310642f-5078-4848-9d3e-244afcb8d060",
       "name": "logo-names"
@@ -654,13 +602,13 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "// Forstauftrag PDF-Generator (Gotenberg/Chromium)\n// 1) Liest n8n-Itemdaten (Form + Zusatzdaten)\n// 2) Erzeugt Header/Footer (Chromium-Seitenränder) und HTML\n// 3) Gotenberg rendert PDF inkl. Header/Footer auf jeder Seite\n\nconst d = item.json || {};\nconst now = new Date().toLocaleString('de-DE', { dateStyle: 'medium', timeStyle: 'short' });\n\n// Helper: ersten gesetzten Wert liefern\nconst pick = (keys, def='—') => {\n  for (const k of keys) {\n    const v = d?.[k];\n    if (v !== undefined && v !== null && String(v) !== '') return v;\n  }\n  return def;\n};\n\n// ---- Logos aus $binary in Data-URLs wandeln ----\nfunction binToDataUrl(name, fallbackMime = 'image/png') {\n  try {\n    const meta = $binary?.[name];\n    if (!meta) return null;\n    const buf  = this.helpers.getBinaryDataBuffer(0, name);\n    const mime = meta.mimeType || fallbackMime;\n    return `data:${mime};base64,${buf.toString('base64')}`;\n  } catch { return null; }\n}\n\n// 1) Logos vorbereiten (Data-URL > evtl. d.assets > null)\nconst logoLeftPrepared   = binToDataUrl.call(this, 'ryzeup') || d?.assets?.ryzeup || null;\nconst logoCenterPrepared = binToDataUrl.call(this, 'bg')     || d?.assets?.bg     || null;\nconst logoRightPrepared  = binToDataUrl.call(this, 'fa')     || d?.assets?.fa     || null;\n\n// 2) THEME erst jetzt definieren – mit vorbereiteten Logos\nconst THEME = {\n  brandBg:    '#112240',\n  brandText:  '#ffffff',\n  bodyFont:   'Arial, Helvetica, sans-serif',\n  fontSizeH:  9,\n  fontSizeF:  8.5,\n  padH:       '6px 12px',\n  padF:       '4px 10px',\n  linkGap:    '16px',\n  borderTopF: '1px solid rgba(255,255,255,.08)',\n  logoLeft:   logoLeftPrepared,\n  logoCenter: logoCenterPrepared,\n  logoRight:  logoRightPrepared,\n};\n\n\n\n// Header CSS\nconst hcss = `\n  *{box-sizing:border-box} body{margin:0; font-family:${THEME.bodyFont}}\n  :root{ --logo-h:40px; --logo-h-center:30px }\n  .wrap{padding:${THEME.padH}; font-size:${THEME.fontSizeH}px; line-height:1.35; width:100%}\n  .grid{display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:12px}\n  .left,.right{display:flex; align-items:center; gap:12px}\n  .left{justify-content:flex-start}\n  .center{justify-self:center; display:flex; align-items:center; gap:8px}\n  .right{justify-content:flex-end}\n  .muted{opacity:.7; margin-top:4px}\n  img.logo{height:var(--logo-h)}\n  img.logo.center{height:var(--logo-h-center)}\n`;\n//CSS Footer\nconst fcss = `\n  *{box-sizing:border-box} body{margin:0; font-family:${THEME.bodyFont}}\n  .wrap{background:${THEME.brandBg}; color:${THEME.brandText}; padding:${THEME.padF};\n        font-size:${THEME.fontSizeF}px; line-height:1.35; border-top:${THEME.borderTopF}}\n  .row{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px}\n  .col{display:flex; gap:${THEME.linkGap}; align-items:center; flex-wrap:wrap}\n  a{color:${THEME.brandText}; text-decoration:none}\n  .num{white-space:nowrap}\n  img{height:14px}\n`;\n\n// === Feld-Mappings (deine Original-Feldnamen inkl. Aliase) ===\nconst meta = {\n  datum:            pick(['Datum Arbeitstag: ', 'Datum']),\n  einsatzort:       pick(['Einsatzort', 'Ort', 'Einsatz-Ort']),\n  verantwortlicher: pick(['Arbeitsverantwortlicher', 'Verantwortlicher']),\n  weitere:          pick(['weitere Einsatzkräfte:', 'weitere Einsatzkraefte'], '—'),\n  kunde:            pick(['Ansprechpartner Kunde: ', 'Kunde']),\n  kundeTel:         pick(['Kunde Telefon: ', 'Kunde Telefon', 'Telefon'], '—'),\n  ersthelfer:       pick(['Ersthelfer vor Ort: '], '—'),\n  submittedAt:      pick(['submittedAt'], now),\n};\n\nconst sicherheit = {\n  verkehr:           pick(['Verkehrsrechtliche Anordnung/Einsatz an Straße']),\n  absperrung:        pick(['Absperrung']),\n  helfer:            pick(['Posten - wie viele Helfer? ']),\n  psa:               pick(['Persönliche Schutzausrüstung geprüft/getragen? ']),\n  psaNote:           pick(['Bemerkungen zu Schutzausrüstung: ']),\n  zufahrt:           pick(['Zufahrt für Maschinen möglich? ']),\n  // Falls der Form-Key abweicht, hier anpassen:\n  maschinen:         Array.isArray(d.Maschintyp) ? d.Maschintyp : (d.Maschintyp ? [d.Maschintyp] : []),\n  maschinenbediener: pick(['Maschinenbediener: '], '—'),\n  gefaehrdungen:     Array.isArray(d['Besondere Gefährdungen:']) ? d['Besondere Gefährdungen:'] : [],\n  massnahmen:        pick(['Maßnahmen bei besonderer Gefährdung eingeleitet?']),\n  unterwiesen:       pick(['Im Trupp/Arbeitsgruppe  unterwiesen?']),\n};\n\n// Zustimmung\nconst zustimmung = Array.isArray(d['Zustimmung:'])\n  ? d['Zustimmung:'].join(', ')\n  : pick(['Zustimmung:', 'Zustimmung'], '—');\n\n// Wetter (OpenWeatherMap)\nconst wetter = {\n  beschreibung: d.weather?.[0]?.description ?? '—',\n  temp:         d.main?.temp ?? '—',\n  druck:        d.main?.pressure ?? '—',\n  wind:         d.wind?.speed ?? '—',\n  wolken:       d.clouds?.all ?? '—',\n};\n\n// Rettungspunkte & GPS\nconst rp = Array.isArray(d.top_3_rettungspunkte) ? d.top_3_rettungspunkte : [];\nconst gps = {\n  lat: pick(['Standortdaten - latitude (erster Wert in GoogleMaps)', 'lat', 'latitude'], ''),\n  lon: pick(['Standortdaten - longitude (zweiter Wert in GoogleMaps)', 'lon', 'longitude'], ''),\n};\nconst mapsUrl = (gps.lat && gps.lon)\n  ? `https://www.google.com/maps?q=${encodeURIComponent(`${gps.lat},${gps.lon}`)}`\n  : null;\n\n// === HTML-Helper ===\nconst esc = (v) => String(v ?? '')\n  .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')\n  .replace(/\"/g,'&quot;').replace(/'/g,'&#039;');\n\nconst chip  = (t) => `<span class=\"chip\">${esc(t)}</span>`;\n\n// FIX: war abgeschnitten → jetzt korrekt geschlossen\nconst chips = (arr = []) => (\n  arr.length\n    ? `<div class=\"chips\">${arr.map(chip).join('')}</div>`\n    : '<span class=\"muted\">—</span>'\n);\n\n// === BODY HTML ===\nconst html = `<!doctype html>\n<html lang=\"de\">\n<head>\n<meta charset=\"utf-8\" />\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n<title>Arbeitsauftrag Forstwirtschaft</title>\n<style>\n  :root{\n    --bg:#0c1512; --surface:#12211a; --surface-2:#0e1b15; --card:#12261c;\n    --brand-1:#10b981; --brand-2:#34d399; --text:#e6f2ec; --muted:#9fb3aa;\n    --border:#0dde81; --warn:#f59e0b; --ok:#22c55e; --chip-bg:#5b7d71;\n    /* Platz im Body – unabhängig von Chromium-Header/Footer */\n    --top-gap: 0mm; --bottom-gap: 0mm;\n  }\n  @page { size:A4; }\n  html, body { height:100%; }\n  * { box-sizing:border-box; -webkit-print-color-adjust:exact; print-color-adjust:exact; }\n  body{margin:0;\n    background:var(--bg); color:var(--text);\n    font: 11pt/1.55 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;\n  }\n  .page{\n    width:210mm; background:var(--surface);\n    display:grid; grid-template-rows:auto 1fr auto;\n    padding: 0 20px 0 20px;\n  }\n  .header{\n    background: linear-gradient(135deg, var(--brand-1), var(--brand-2));\n    color:#05110d; border-radius:10px; padding:5mm 7mm; margin-bottom:6mm;\n    margin-top: 4mm;\n  }\n  .header h1{ margin:0 0 2mm; font-size:18pt; letter-spacing:.2px; }\n  .header .sub{ margin:0; opacity:.85; }\n  .meta{ margin-top:2mm; display:flex; gap:6mm; flex-wrap:wrap; font-size:10pt;\n  color:#052017; font-weight:600; \n  }\n  .content{\n  display: flex;               /* oder: display:grid */\n  flex-direction: column;      /* bei grid nicht nötig */\n  row-gap: 6mm;                /* <— HIER stellst du den Card-Abstand ein */\n  }\n  .card{ \n  background:var(--card); border:1px solid var(--border); \n  border-radius:12px;margin:0;\n  overflow:hidden; box-shadow:0 8px 24px rgba(0,0,0,.23); page-break-inside:avoid;\n  break-inside:avoid-page; \n  }\n         \n  .card .card-h{ padding:5mm 7mm 4mm; font-weight:700; letter-spacing:.3px; border-bottom:1px solid var(--border); }\n  .card .card-b{ padding:4mm 5mm; }\n  .card[class*='card--']{ border-left:4px solid var(--accent); }\n  .card[class*='card--'] .card-h{ background:var(--accent); color:#05110d; }\n  .card--auftrag{ --accent:#34d399; }\n  .card--sicherheit{ --accent:#f59e0b; }\n  .card--wetter{ --accent:#3b82f6; }\n  .card--rettung{ --accent:#ef4444; }\n  .card--gps{ --accent:#8b5cf6; }\n  .card--zustimmung{ --accent:#10b981; }\n  .grid{ display:flex; flex-wrap:wrap; gap:3mm 5mm; }\n  .row{ display:flex; flex-direction:column; flex:1 1 calc(50% - 5mm); min-width:80mm; }\n  .label{ font-size:10pt; color:var(--muted); text-transform:uppercase; letter-spacing:.35px; margin-bottom:1mm; }\n  .val{ font-size:13pt; font-weight:600; }\n  .yes{ color:var(--ok); } .no{ color:var(--warn); }\n  .chips{ display:flex; flex-wrap:wrap; gap:4mm; margin-top:2mm; }\n  .chip{ background:var(--chip-bg); border:1px solid var(--border); padding:2.5mm 4mm; border-radius:999px; font-size:9.5pt; font-weight:700; color:var(--text); }\n  .chip.hazard{ background:#3b1f0a; border-color:#7a3c11; color:#ffcc88; }\n  .weather{ display:grid; grid-template-columns:repeat(5,1fr); gap:6mm; text-align:center; }\n  .wbox{ background:var(--surface-2); border:1px solid var(--border); border-radius:10px; padding:6mm 4mm; }\n  .wval{ font-size:16pt; font-weight:800; color:var(--brand-2); margin-bottom:1mm; }\n  .wlab{ font-size:8.5pt; color:var(--muted); text-transform:uppercase; }\n  table.tbl{ width:100%; border-collapse:separate; border-spacing:0; background:var(--surface-2); border:1px solid var(--border); border-radius:10px; overflow:hidden; }\n  .tbl thead th{ background:#0f2b20; color:#c9f0e1; text-align:left; padding:4.5mm 5mm; font-size:10pt; border-bottom:1px solid var(--border); }\n  .tbl td{ padding:4mm 5mm; border-bottom:1px solid var(--border); }\n  .tbl tr:last-child td{ border-bottom:0; }\n  .td-num{ text-align:right; font-weight:700; color:var(--brand-2); }\n  .gps{ background:var(--surface-2); border:1px solid var(--border); border-radius:10px; padding:6mm; text-align:center; }\n  .coord{ font:700 14pt/1.1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color:#8be0b6; margin:2mm 0 3mm; }\n  .map a{ color:var(--brand-2); text-decoration:none; font-weight:700; }\n  .map a:hover{ text-decoration:underline; }\n  .consent{ display:flex; align-items:center; gap:4mm; }\n  .consent-check{ font-size:14pt; color:var(--brand-2); }\n  .consent-text{ font-size:10.5pt; line-height:1.4; }\n  .consent-note{ margin-top:4mm; font-size:9pt; color:var(--muted); }\n  @media screen and (max-width:900px){\n    .grid{ flex-direction:column; }\n    .row{ flex-basis:100%; }\n    .weather{ grid-template-columns: repeat(2, 1fr); }\n  }\n</style>\n</head>\n<body>\n  <div class=\"page\">\n    <!-- Body-Header (ästhetischer Kasten, unabhängig vom Chromium-Header) -->\n    <div class=\"header\">\n      <h1>Arbeitsauftrag Forstwirtschaft</h1>\n      <p class=\"sub\">Einsatzort: ${esc(meta.einsatzort || '—')}</p>\n      <div class=\"meta\">\n        <div><strong>Datum:</strong> ${esc(meta.datum || '—')}</div>\n        <div><strong>Erstellt:</strong> ${esc(now)}</div>\n        <div><strong>Verantwortlich:</strong> ${esc(meta.verantwortlicher || '—')}</div>\n      </div>\n    </div>\n\n    <!-- Inhalt -->\n    <div class=\"content\">\n\n      <div class=\"card card--auftrag\">\n        <div class=\"card-h\">Auftragsdaten</div>\n        <div class=\"card-b\">\n          <div class=\"grid\">\n            <div class=\"row\"><div class=\"label\">Einsatzort</div><div class=\"val\">${esc(meta.einsatzort || '—')}</div></div>\n            <div class=\"row\"><div class=\"label\">Arbeitsverantwortlicher</div><div class=\"val\">${esc(meta.verantwortlicher || '—')}</div></div>\n            <div class=\"row\"><div class=\"label\">Weitere Einsatzkräfte</div><div class=\"val\">${esc(meta.weitere || '—')}</div></div>\n            <div class=\"row\"><div class=\"label\">Ansprechpartner Kunde</div><div class=\"val\">${esc(meta.kunde || '—')}</div></div>\n            <div class=\"row\"><div class=\"label\">Kunde Telefon</div><div class=\"val\">${esc(meta.kundeTel || '—')}</div></div>\n            <div class=\"row\"><div class=\"label\">Ersthelfer vor Ort</div><div class=\"val\">${esc(meta.ersthelfer || '—')}</div></div>\n          </div>\n        </div>\n      </div>\n\n      <div class=\"card card--sicherheit\">\n        <div class=\"card-h\">Sicherheit &amp; Organisation</div>\n        <div class=\"card-b\">\n          <div class=\"grid\">\n            <div class=\"row\"><div class=\"label\">Verkehrsrechtliche Anordnung</div><div class=\"val ${sicherheit.verkehr === 'ja' ? 'yes' : 'no'}\">${esc(sicherheit.verkehr)}</div></div>\n            <div class=\"row\"><div class=\"label\">Absperrung</div><div class=\"val\">${esc(sicherheit.absperrung)}</div></div>\n            <div class=\"row\"><div class=\"label\">Posten/Helfer</div><div class=\"val\">${esc(sicherheit.helfer)}</div></div>\n            <div class=\"row\"><div class=\"label\">PSA geprüft/getragen</div><div class=\"val ${sicherheit.psa === 'ja' ? 'yes' : 'no'}\">${esc(sicherheit.psa)}</div></div>\n            <div class=\"row\"><div class=\"label\">Zufahrt für Maschinen</div><div class=\"val ${sicherheit.zufahrt === 'ja' ? 'yes' : 'no'}\">${esc(sicherheit.zufahrt)}</div></div>\n            <div class=\"row\"><div class=\"label\">Maschinenbediener</div><div class=\"val\">${esc(sicherheit.maschinenbediener)}</div></div>\n          </div>\n\n          ${ (sicherheit.psaNote && sicherheit.psaNote !== '—')\n              ? '<div style=\"margin-top:5mm\">'\n                + '<div class=\"label\">Bemerkungen PSA</div>'\n                + '<div class=\"val\">' + esc(sicherheit.psaNote) + '</div>'\n              + '</div>'\n              : ''\n          }\n\n          <div style=\"margin-top:6mm\">\n            <div class=\"label\">Maschinentyp(en)</div>\n            ${chips(sicherheit.maschinen)}\n          </div>\n\n          ${ sicherheit.gefaehrdungen.length\n              ? '<div style=\"margin-top:6mm\">'\n                + '<div class=\"label\">Besondere Gefährdungen</div>'\n                + chips(sicherheit.gefaehrdungen.map(g => `⚠️ ${g}`))\n              + '</div>'\n              : ''\n          }\n\n          <div class=\"grid\" style=\"margin-top:6mm\">\n            <div class=\"row\"><div class=\"label\">Maßnahmen bei Gefährdung eingeleitet</div><div class=\"val ${sicherheit.massnahmen === 'ja' ? 'yes' : 'no'}\">${esc(sicherheit.massnahmen)}</div></div>\n            <div class=\"row\"><div class=\"label\">Unterweisung im Trupp</div><div class=\"val ${sicherheit.unterwiesen === 'ja' ? 'yes' : 'no'}\">${esc(sicherheit.unterwiesen)}</div></div>\n          </div>\n        </div>\n      </div>\n\n      <div class=\"card card--wetter\">\n        <div class=\"card-h\">Wetterbedingungen</div>\n        <div class=\"card-b\">\n          <div class=\"weather\">\n            <div class=\"wbox\"><div class=\"wval\">${esc(wetter.beschreibung)}</div><div class=\"wlab\">Beschreibung</div></div>\n            <div class=\"wbox\"><div class=\"wval\">${esc(wetter.temp)} °C</div><div class=\"wlab\">Temperatur</div></div>\n            <div class=\"wbox\"><div class=\"wval\">${esc(wetter.druck)} hPa</div><div class=\"wlab\">Luftdruck</div></div>\n            <div class=\"wbox\"><div class=\"wval\">${esc(wetter.wind)} m/s</div><div class=\"wlab\">Wind</div></div>\n            <div class=\"wbox\"><div class=\"wval\">${esc(wetter.wolken)} %</div><div class=\"wlab\">Bewölkung</div></div>\n          </div>\n        </div>\n      </div>\n\n      <div class=\"card card--rettung\">\n        <div class=\"card-h\">Nächste Rettungspunkte</div>\n        <div class=\"card-b\">\n          <table class=\"tbl\">\n            <thead><tr><th>#</th><th>RP-Nummer</th><th>Beschreibung</th><th>Bundesland</th><th style=\"text-align:right\">Entfernung</th></tr></thead>\n            <tbody>\n              ${\n                rp.length\n                  ? rp.map((p,i) =>\n                      '<tr>'\n                        + '<td>' + (i+1) + '</td>'\n                        + '<td><strong>' + esc(p.rp_nr) + '</strong></td>'\n                        + '<td>' + esc(p.beschreibung) + '</td>'\n                        + '<td>' + esc(p.bundesland) + '</td>'\n                        + '<td class=\"td-num\">' + esc(p.entfernung_m) + ' m</td>'\n                      + '</tr>'\n                    ).join('')\n                  : '<tr><td colspan=\"5\" style=\"text-align:center;color:var(--muted);font-style:italic;padding:7mm 0\">Keine Rettungspunkte gefunden</td></tr>'\n              }\n            </tbody>\n          </table>\n        </div>\n      </div>\n\n      <div class=\"card card--gps\">\n        <div class=\"card-h\">GPS-Standort</div>\n        <div class=\"card-b\">\n          <div class=\"gps\">\n            <div class=\"label\">Koordinaten</div>\n            <div class=\"coord\">${esc(gps.lat || '—')}, ${esc(gps.lon || '—')}</div>\n            <div class=\"map\">\n              ${\n                mapsUrl\n                  ? '<a href=\"' + esc(mapsUrl) + '\">🗺️ Karte öffnen</a>'\n                  : '<span style=\"color:var(--muted)\">Kein Kartenlink verfügbar</span>'\n              }\n            </div>\n          </div>\n        </div>\n      </div>\n\n      <div class=\"card card--zustimmung\">\n        <div class=\"card-h\">Zustimmung</div>\n        <div class=\"card-b\">\n          <div class=\"consent\">\n            <div class=\"consent-check\">✓</div>\n            <div class=\"consent-text\">Zustimmung des Nutzers (${esc(meta.verantwortlicher || '—')})</div>\n          </div>\n          <div class=\"consent-note\">Diese digitale Zustimmung per Haken repräsentiert eine Unterschrift des Nutzers.</div>\n        </div>\n      </div>\n\n    </div>\n  </div>\n</body>\n</html>\n`;\n\n// Header-Template\nconst headerTemplate = `\n  <style>${hcss}</style>\n  <div class=\"wrap\">\n    <div class=\"grid\">\n      <div class=\"left\">\n        ${THEME.logoLeft ? `<img class=\"logo\" src=\"${THEME.logoLeft}\" alt=\"Logo left\">` : ''}\n      </div>\n      <div class=\"center\">\n        ${THEME.logoCenter ? `<img class=\"logo center\" src=\"${THEME.logoCenter}\" alt=\"Logo center\">` : ''}\n        <strong>Forstauftrag</strong>\n      </div>\n      <div class=\"right\">\n        ${THEME.logoRight ? `<img class=\"logo\" src=\"${THEME.logoRight}\" alt=\"Logo right\">` : ''}\n      </div>\n    </div>\n    <div class=\"muted\">Einsatzort: ${esc(meta.einsatzort || '—')} · ${esc(now)}</div>\n  </div>\n`;\n\n// === CHROMIUM FOOTER ===\nconst footerTemplate = `\n  <style>${fcss}</style>\n  <div class=\"wrap\">\n    <div class=\"row\">\n      <div class=\"col\">\n        ${THEME.logoLeft ? `<img src=\"${THEME.logoLeft}\" alt=\"Logo\"/>` : ''}\n        <strong>Ryzeup UG</strong>\n        <span>Rotthang 3, 84494 Neumarkt-Sankt Veit</span>\n        <span>HRB 33167, AG Traunstein</span>\n      </div>\n      <div class=\"col\">\n        <a>Kontakt</a><a>About</a><a>Termin</a><a>Datenschutz</a>\n        <span class=\"num\"><span class=\"pageNumber\"></span>/<span class=\"totalPages\"></span></span>\n      </div>\n    </div>\n    <div class=\"row\" style=\"margin-top:4px\">\n      <div>© ${new Date().getFullYear()} Ryzeup UG. Alle Rechte vorbehalten.</div>\n    </div>\n  </div>\n`;\n\n// === EMPFOHLENE DRUCK-RÄNDER FÜR Gotenberg/Chromium ===\n// Diese Werte musst du beim HTTP Request mitgeben (siehe unten).\nconst printOptions = {\n  paperWidth:  8.27,  // A4 in Inch\n  paperHeight: 11.69, // A4 in Inch\n  marginTop:    0.85,  // ~15 mm\n  marginBottom: 0.53,  // ~15 mm\n  marginLeft:   0.05, // 10 mm\n  marginRight:  0, // 10 mm\n  printBackground: true,\n  scale: 1,\n};\n\n// ---------- Robustheits-Footer für pdf-template.js ----------\n\nconst MAX_ATTEMPTS = 5;\nconst BASE_DELAY_MS = 500;\nconst JITTER_MS = 250;\n\nconst sleep = (ms) => new Promise(r => setTimeout(r, ms));\n\nfunction get(obj, path) {\n  return path.split('.').reduce((o, k) => (o && o[k] !== undefined ? o[k] : undefined), obj);\n}\n\nfunction hasAll(paths, root) {\n  return paths.every(p => {\n    const v = get(root, p);\n    return v !== undefined && v !== null && !(typeof v === 'string' && v.trim() === '');\n  });\n}\n\n// Wenn du Daten aus benannten Nodes brauchst, kannst du sie hier mergen.\nfunction isReady() {\n  return true;\n}\n\n// Achtung: Wir geben bewusst KEIN ...item.json zurück, um Payload-Aufblähung & Zyklen zu verhindern.\nasync function finalizePdfSafe(buildFn) {\n  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {\n    if (isReady()) {\n      const result = buildFn();\n\n      // Mini-Validierung gegen leere PDFs\n      if (!result || !result.html || typeof result.html !== 'string' || result.html.trim() === '') {\n        throw new Error('TransientError: html not built yet');\n      }\n\n      // N8N-Format: Array von Items mit { json: ... }\n      return { json: result };\n    }\n    if (attempt < MAX_ATTEMPTS) {\n      const backoff = BASE_DELAY_MS * Math.pow(2, attempt - 1);\n      const jitter = Math.floor(Math.random() * JITTER_MS);\n      const wait = backoff + jitter;\n      console.log(`[pdf-template] Inputs not ready (${attempt}/${MAX_ATTEMPTS - 1}). Wait ${wait}ms`);\n      await sleep(wait);\n    }\n  }\n  throw new Error('TransientError: PDF template inputs not ready');\n}\n\n// ---------- ENDE Robustheits-Footer ----------\n\nfunction buildOriginalReturn() {\n  return {\n    html,\n    headerTemplate,\n    footerTemplate,\n    printOptions,\n    // << NEU: nur was der nächste Node zum Benennen braucht\n    metaForFilename: {\n      einsatzort: meta.einsatzort || '',\n      datum: meta.datum || ''   // deine Formular-Datumsspalte\n    }\n  };\n}\n\nreturn await finalizePdfSafe(buildOriginalReturn);\n"
+        "jsCode": "// Forstauftrag PDF-Generator (Gotenberg/Chromium)\n// 1) Liest n8n-Itemdaten (Form + Zusatzdaten)\n// 2) Erzeugt Header/Footer (Chromium-Seitenränder) und HTML\n// 3) Gotenberg rendert PDF inkl. Header/Footer auf jeder Seite\n\nconst d = item.json || {};\nconst now = new Date().toLocaleString('de-DE', { dateStyle: 'medium', timeStyle: 'short' });\n\n// Helper: ersten gesetzten Wert liefern\nconst pick = (keys, def='—') => {\n  for (const k of keys) {\n    const v = d?.[k];\n    if (v !== undefined && v !== null && String(v) !== '') return v;\n  }\n  return def;\n};\n\n// ---- Logos aus $binary in Data-URLs wandeln ----\nfunction binToDataUrl(name, fallbackMime = 'image/png') {\n  try {\n    const meta = $binary?.[name];\n    if (!meta) return null;\n    const buf  = this.helpers.getBinaryDataBuffer(0, name);\n    const mime = meta.mimeType || fallbackMime;\n    return `data:${mime};base64,${buf.toString('base64')}`;\n  } catch { return null; }\n}\n\n// 1) Logos vorbereiten (Data-URL > evtl. d.assets > null)\nconst logoLeftPrepared   = binToDataUrl.call(this, 'ryzeup') || d?.assets?.ryzeup || null;\nconst logoCenterPrepared = binToDataUrl.call(this, 'bg')     || d?.assets?.bg     || null;\nconst logoRightPrepared  = binToDataUrl.call(this, 'fa')     || d?.assets?.fa     || null;\n\n// 2) THEME erst jetzt definieren – mit vorbereiteten Logos\nconst THEME = {\n  brandBg:    '#112240',\n  brandText:  '#e6e1e1',\n  bodyFont:   'Arial, Helvetica, sans-serif',\n  fontSizeH:  8,\n  fontSizeF:  8,\n  padH:       '6px 12px',\n  padF:       '4px 10px',\n  linkGap:    '16px',\n  borderTopF: '1px solid rgba(255,255,255,.08)',\n  logoLeft:   logoLeftPrepared,\n  logoCenter: logoCenterPrepared,\n  logoRight:  logoRightPrepared,\n};\n\n\n\n// Header CSS\nconst hcss = `\n  *{box-sizing:border-box} body{margin:0; font-family:${THEME.bodyFont}}\n  :root{ --logo-h:40px; --logo-h-center:30px }\n  .wrap{padding:${THEME.padH}; font-size:${THEME.fontSizeH}px; line-height:1.35; width:100%}\n  .grid{display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:12px}\n  .left,.right{display:flex; align-items:center; gap:12px}\n  .left{justify-content:flex-start}\n  .center{justify-self:center; display:flex; align-items:center; gap:8px}\n  .right{justify-content:flex-end}\n  .muted{opacity:.7; margin-top:4px}\n  img.logo{height:var(--logo-h)}\n  img.logo.center{height:var(--logo-h-center)}\n`;\n//CSS Footer\nconst fcss = `\n  *{box-sizing:border-box} body{margin:0; font-family:${THEME.bodyFont}}\n  .wrap{background:${THEME.brandBg}; color:${THEME.brandText}; padding:${THEME.padF};\n        font-size:${THEME.fontSizeF}px; line-height:1.35; border-top:${THEME.borderTopF}}\n  .row{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px}\n  .col{display:flex; gap:${THEME.linkGap}; align-items:center; flex-wrap:wrap}\n  a{color:${THEME.brandText}; text-decoration:none}\n  .num{white-space:nowrap}\n  img{height:14px}\n`;\n\n// === Feld-Mappings (deine Original-Feldnamen inkl. Aliase) ===\nconst meta = {\n  datum:            pick(['Datum Arbeitstag: ', 'Datum']),\n  einsatzort:       pick(['Einsatzort', 'Ort', 'Einsatz-Ort']),\n  verantwortlicher: pick(['Arbeitsverantwortlicher', 'Verantwortlicher']),\n  weitere:          pick(['weitere Einsatzkräfte:', 'weitere Einsatzkraefte'], '—'),\n  kunde:            pick(['Ansprechpartner Kunde: ', 'Kunde']),\n  kundeTel:         pick(['Kunde Telefon: ', 'Kunde Telefon', 'Telefon'], '—'),\n  ersthelfer:       pick(['Ersthelfer vor Ort: '], '—'),\n  submittedAt:      pick(['submittedAt'], now),\n};\n\nconst sicherheit = {\n  verkehr:           pick(['Verkehrsrechtliche Anordnung/Einsatz an Straße']),\n  absperrung:        pick(['Absperrung']),\n  helfer:            pick(['Posten - wie viele Helfer? ']),\n  psa:               pick(['Persönliche Schutzausrüstung geprüft/getragen? ']),\n  psaNote:           pick(['Bemerkungen zu Schutzausrüstung: ']),\n  zufahrt:           pick(['Zufahrt für Maschinen möglich? ']),\n  // Falls der Form-Key abweicht, hier anpassen:\n  maschinen:         Array.isArray(d.Maschintyp) ? d.Maschintyp : (d.Maschintyp ? [d.Maschintyp] : []),\n  maschinenbediener: pick(['Maschinenbediener: '], '—'),\n  gefaehrdungen:     Array.isArray(d['Besondere Gefährdungen:']) ? d['Besondere Gefährdungen:'] : [],\n  massnahmen:        pick(['Maßnahmen bei besonderer Gefährdung eingeleitet?']),\n  unterwiesen:       pick(['Im Trupp/Arbeitsgruppe  unterwiesen?']),\n};\n\n// Zustimmung\nconst zustimmung = Array.isArray(d['Zustimmung:'])\n  ? d['Zustimmung:'].join(', ')\n  : pick(['Zustimmung:', 'Zustimmung'], '—');\n\n// Wetter (OpenWeatherMap)\n// Wetter (OpenWeatherMap)\nconst wetter = {\n  beschreibung: d.weather?.[0]?.description ?? '—',\n  temp:         d.main?.temp ?? '—',\n  druck:        d.main?.pressure ?? '—',\n  wind:         d.wind?.speed ?? '—',\n  wolken:       d.clouds?.all ?? '—',\n  //Regenmenge in L/qm (1mm = 1 L/qm). Wenn kein Feld vorhanden: 0.\n  regen_lqm: (() => {\n    const v = d.rain?.['1h'] ?? d.rain?.['3h'] ?? 0;\n    const n = typeof v === 'number' ? v : Number(v);\n    return Number.isFinite(n) ? n : 0;\n  })(),\n};\n\n\n// Rettungspunkte & GPS\nconst rp = Array.isArray(d.top_3_rettungspunkte) ? d.top_3_rettungspunkte : [];\nconst gps = {\n  lat: pick(['Standortdaten - latitude (erster Wert in GoogleMaps)', 'lat', 'latitude'], ''),\n  lon: pick(['Standortdaten - longitude (zweiter Wert in GoogleMaps)', 'lon', 'longitude'], ''),\n};\nconst mapsUrl = (gps.lat && gps.lon)\n  ? `https://www.google.com/maps?q=${encodeURIComponent(`${gps.lat},${gps.lon}`)}`\n  : null;\n\n// === HTML-Helper ===\nconst esc = (v) => String(v ?? '')\n  .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')\n  .replace(/\"/g,'&quot;').replace(/'/g,'&#039;');\n\nconst chip  = (t) => `<span class=\"chip\">${esc(t)}</span>`;\n\n// FIX: war abgeschnitten → jetzt korrekt geschlossen\nconst chips = (arr = []) => (\n  arr.length\n    ? `<div class=\"chips\">${arr.map(chip).join('')}</div>`\n    : '<span class=\"muted\">—</span>'\n);\n\n// === BODY HTML ===\nconst html = `<!doctype html>\n<html lang=\"de\">\n<head>\n<meta charset=\"utf-8\" />\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n<title>Arbeitsauftrag Forstwirtschaft</title>\n<style>\n  :root{\n    --bg:#0c1512; --surface:#12211a; --surface-2:#0e1b15; --card:#12261c;\n    --brand-1:#10b981; --brand-2:#34d399; --text:#e6f2ec; --muted:#9fb3aa;\n    --border:#0dde81; --warn:#f59e0b; --ok:#22c55e; --chip-bg:#5b7d71;\n    /* Platz im Body – unabhängig von Chromium-Header/Footer */\n    --top-gap: 0mm; --bottom-gap: 0mm;\n  }\n  @page { size:A4; }\n  html, body { height:100%; }\n  * { box-sizing:border-box; -webkit-print-color-adjust:exact; print-color-adjust:exact; }\n  body{margin:0;\n    background:var(--bg); color:var(--text);\n    font: 9pt/1.4 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;\n  }\n  .page{\n    width:210mm; background:var(--surface);\n    display:grid; grid-template-rows:auto 1fr auto;\n    padding: 0px 20px;\n  }\n  .header{\n    background: linear-gradient(135deg, var(--brand-1), var(--brand-2));\n    color:#05110d; border-radius:10px; padding:4mm 6mm; margin-bottom:4mm;\n    margin-top: 2mm;\n  }\n  .header h1{ margin:0 0 2mm; font-size:16pt; letter-spacing:.2px; }\n  .header .sub{ margin:0; opacity:.85; }\n  .meta{ margin-top:2mm; display:flex; gap:6mm; flex-wrap:wrap; font-size:10pt;\n  color:#052017; font-weight:600; \n  }\n  .content{\n  display: flex;               /* oder: display:grid */\n  flex-direction: column;      /* bei grid nicht nötig */\n  row-gap: 4mm;/* <— HIER stellst du den Card-Abstand ein */\n  padding-bottom: 2mm;\n  padding-top: 2mm;\n  }\n  .card{ \n  background:var(--card); border:1px solid var(--border); \n  border-radius:12px;margin:0;\n  overflow:hidden; box-shadow:0 8px 24px rgba(0,0,0,.23); page-break-inside:avoid;\n  break-inside:avoid-page; \n  }\n         \n  .card .card-h{ padding:4mm 6mm 3mm; font-weight:600; letter-spacing:.3px; border-bottom:1px solid var(--border); }\n  .card .card-b{ padding:2.5mm 4mm; }\n  .card[class*='card--']{ border-left:4px solid var(--accent); }\n  .card[class*='card--'] .card-h{ background:var(--accent); color:#05110d; }\n  .card--auftrag{ --accent:#34d399; }\n  .card--sicherheit{ --accent:#f59e0b; }\n  .card--wetter{ --accent:#3b82f6; }\n  .card--rettung{ --accent:#ef4444; }\n  .card--gps{ --accent:#8b5cf6; }\n  .card--zustimmung{ --accent:#10b981; }\n  .grid{ display:flex; flex-wrap:wrap; gap:3mm 5mm; }\n  .row{ display:flex; flex-direction:column; flex:1 1 calc(50% - 5mm); min-width:80mm; }\n  .label{ font-size:10pt; color:var(--muted); text-transform:uppercase; letter-spacing:.35px; margin-bottom:1mm; }\n  .val{ font-size:11pt; font-weight:600; }\n  .yes{ color:var(--ok); } .no{ color:var(--warn); }\n  .chips{ display:flex; flex-wrap:wrap; gap:4mm; margin-top:2mm; }\n  .chip{ background:var(--chip-bg); border:1px solid var(--border); padding:2.5mm 4mm; border-radius:999px; font-size:9pt; font-weight:700; color:var(--text); }\n  .chip.hazard{ background:#3b1f0a; border-color:#7a3c11; color:#ffcc88; }\n  .weather{ display:grid; grid-template-columns:repeat(5,1fr); gap:6mm; text-align:center; }\n  .wbox{ background:var(--surface-2); border:1px solid var(--border); border-radius:10px; padding:6mm 4mm; }\n  .wval{ font-size:14pt; font-weight:800; color:var(--brand-2); margin-bottom:1mm; }\n  .wlab{ font-size:8pt; color:var(--muted); text-transform:uppercase; }\n  table.tbl{ width:100%; border-collapse:separate; border-spacing:0; background:var(--surface-2); border:1px solid var(--border); border-radius:10px; overflow:hidden; }\n  .tbl thead th{ background:#0f2b20; color:#c9f0e1; text-align:left; padding:4.5mm 5mm; font-size:9pt; border-bottom:1px solid var(--border); }\n  .tbl td{ padding:4mm 5mm; border-bottom:1px solid var(--border); }\n  .tbl tr:last-child td{ border-bottom:0; }\n  .td-num{ text-align:right; font-weight:700; color:var(--brand-2); }\n  .gps{ background:var(--surface-2); border:1px solid var(--border); border-radius:10px; padding:6mm; text-align:center; }\n  .coord{ font:700 14pt/1.1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color:#8be0b6; margin:2mm 0 3mm; }\n  .map a{ color:var(--brand-2); text-decoration:none; font-weight:700; }\n  .map a:hover{ text-decoration:underline; }\n  .consent{ display:flex; align-items:center; gap:4mm; }\n  .consent-check{ font-size:14pt; color:var(--brand-2); }\n  .consent-text{ font-size:10.5pt; line-height:1.4; }\n  .consent-note{ margin-top:4mm; font-size:9pt; color:var(--muted); }\n  @media screen and (max-width:900px){\n    .grid{ flex-direction:column; }\n    .row{ flex-basis:100%; }\n    .weather{ display:grid; grid-template-columns:repeat(3,1fr); gap:5mm; text-align:center; }\n   @media screen and (max-width:900px){\n    .weather{ grid-template-columns: repeat(2, 1fr); }\n   }\n  }\n</style>\n</head>\n<body>\n  <div class=\"page\">\n    <!-- Body-Header (ästhetischer Kasten, unabhängig vom Chromium-Header) -->\n    <div class=\"header\">\n      <h1>Arbeitsauftrag Forstwirtschaft</h1>\n      <p class=\"sub\">Einsatzort: ${esc(meta.einsatzort || '—')}</p>\n      <div class=\"meta\">\n        <div><strong>Datum:</strong> ${esc(meta.datum || '—')}</div>\n        <div><strong>Erstellt:</strong> ${esc(now)}</div>\n        <div><strong>Verantwortlich:</strong> ${esc(meta.verantwortlicher || '—')}</div>\n      </div>\n    </div>\n\n    <!-- Inhalt -->\n    <div class=\"content\">\n\n      <div class=\"card card--auftrag\">\n        <div class=\"card-h\">Auftragsdaten</div>\n        <div class=\"card-b\">\n          <div class=\"grid\">\n            <div class=\"row\"><div class=\"label\">Einsatzort</div><div class=\"val\">${esc(meta.einsatzort || '—')}</div></div>\n            <div class=\"row\"><div class=\"label\">Arbeitsverantwortlicher</div><div class=\"val\">${esc(meta.verantwortlicher || '—')}</div></div>\n            <div class=\"row\"><div class=\"label\">Weitere Einsatzkräfte</div><div class=\"val\">${esc(meta.weitere || '—')}</div></div>\n            <div class=\"row\"><div class=\"label\">Ansprechpartner Kunde</div><div class=\"val\">${esc(meta.kunde || '—')}</div></div>\n            <div class=\"row\"><div class=\"label\">Kunde Telefon</div><div class=\"val\">${esc(meta.kundeTel || '—')}</div></div>\n            <div class=\"row\"><div class=\"label\">Ersthelfer vor Ort</div><div class=\"val\">${esc(meta.ersthelfer || '—')}</div></div>\n          </div>\n        </div>\n      </div>\n\n      <div class=\"card card--sicherheit\">\n        <div class=\"card-h\">Sicherheit &amp; Organisation</div>\n        <div class=\"card-b\">\n          <div class=\"grid\">\n            <div class=\"row\"><div class=\"label\">Verkehrsrechtliche Anordnung</div><div class=\"val ${sicherheit.verkehr === 'ja' ? 'yes' : 'no'}\">${esc(sicherheit.verkehr)}</div></div>\n            <div class=\"row\"><div class=\"label\">Absperrung</div><div class=\"val\">${esc(sicherheit.absperrung)}</div></div>\n            <div class=\"row\"><div class=\"label\">Posten/Helfer</div><div class=\"val\">${esc(sicherheit.helfer)}</div></div>\n            <div class=\"row\"><div class=\"label\">PSA geprüft/getragen</div><div class=\"val ${sicherheit.psa === 'ja' ? 'yes' : 'no'}\">${esc(sicherheit.psa)}</div></div>\n            <div class=\"row\"><div class=\"label\">Zufahrt für Maschinen</div><div class=\"val ${sicherheit.zufahrt === 'ja' ? 'yes' : 'no'}\">${esc(sicherheit.zufahrt)}</div></div>\n            <div class=\"row\"><div class=\"label\">Maschinenbediener</div><div class=\"val\">${esc(sicherheit.maschinenbediener)}</div></div>\n          </div>\n\n          ${ (sicherheit.psaNote && sicherheit.psaNote !== '—')\n              ? '<div style=\"margin-top:5mm\">'\n                + '<div class=\"label\">Bemerkungen PSA</div>'\n                + '<div class=\"val\">' + esc(sicherheit.psaNote) + '</div>'\n              + '</div>'\n              : ''\n          }\n\n          <div style=\"margin-top:6mm\">\n            <div class=\"label\">Maschinentyp(en)</div>\n            ${chips(sicherheit.maschinen)}\n          </div>\n\n          ${ sicherheit.gefaehrdungen.length\n              ? '<div style=\"margin-top:6mm\">'\n                + '<div class=\"label\">Besondere Gefährdungen</div>'\n                + chips(sicherheit.gefaehrdungen.map(g => `⚠️ ${g}`))\n              + '</div>'\n              : ''\n          }\n\n          <div class=\"grid\" style=\"margin-top:6mm\">\n            <div class=\"row\"><div class=\"label\">Maßnahmen bei Gefährdung eingeleitet</div><div class=\"val ${sicherheit.massnahmen === 'ja' ? 'yes' : 'no'}\">${esc(sicherheit.massnahmen)}</div></div>\n            <div class=\"row\"><div class=\"label\">Unterweisung im Trupp</div><div class=\"val ${sicherheit.unterwiesen === 'ja' ? 'yes' : 'no'}\">${esc(sicherheit.unterwiesen)}</div></div>\n          </div>\n        </div>\n      </div>\n\n      <div class=\"card card--wetter\">\n        <div class=\"card-h\">Wetterbedingungen</div>\n        <div class=\"card-b\">\n          <div class=\"weather\">\n            <div class=\"wbox\"><div class=\"wval\">${esc(wetter.beschreibung)}</div><div class=\"wlab\">Beschreibung</div></div>\n            <div class=\"wbox\"><div class=\"wval\">${esc(wetter.temp)} °C</div><div class=\"wlab\">Temperatur</div></div>\n            <div class=\"wbox\"><div class=\"wval\">${esc(wetter.druck)} hPa</div><div class=\"wlab\">Luftdruck</div></div>\n            <div class=\"wbox\"><div class=\"wval\">${esc(wetter.wind)} m/s</div><div class=\"wlab\">Wind</div></div>\n            <div class=\"wbox\"><div class=\"wval\">${esc(wetter.wolken)} %</div><div class=\"wlab\">Bewölkung</div></div>\n            <div class=\"wbox\"><div class=\"wval\">${esc(wetter.regen_lqm)} L/qm</div><div class=\"wlab\">Niederschlag (letzte Std.)</div></div>\n          </div>\n        </div>\n      </div>\n\n      <div class=\"card card--rettung\">\n        <div class=\"card-h\">Nächste Rettungspunkte</div>\n        <div class=\"card-b\">\n          <table class=\"tbl\">\n            <thead><tr><th>#</th><th>RP-Nummer</th><th>Beschreibung</th><th>Bundesland</th><th style=\"text-align:right\">Entfernung</th></tr></thead>\n            <tbody>\n              ${\n                rp.length\n                  ? rp.map((p,i) =>\n                      '<tr>'\n                        + '<td>' + (i+1) + '</td>'\n                        + '<td><strong>' + esc(p.rp_nr) + '</strong></td>'\n                        + '<td>' + esc(p.beschreibung) + '</td>'\n                        + '<td>' + esc(p.bundesland) + '</td>'\n                        + '<td class=\"td-num\">' + esc(p.entfernung_m) + ' m</td>'\n                      + '</tr>'\n                    ).join('')\n                  : '<tr><td colspan=\"5\" style=\"text-align:center;color:var(--muted);font-style:italic;padding:7mm 0\">Keine Rettungspunkte gefunden</td></tr>'\n              }\n            </tbody>\n          </table>\n        </div>\n      </div>\n\n      <div class=\"card card--gps\">\n        <div class=\"card-h\">GPS-Standort</div>\n        <div class=\"card-b\">\n         <div class=\"gps\">\n<div class=\"label\">Koordinaten</div>\n<div class=\"coord\">\n${esc($json.gps_ursprung?.latitude ?? 'kein latitude/Breitengrad')},\n${esc($json.gps_ursprung?.longitude ?? 'keine longitude/Längengrad')}\n</div>\n</div>\n\n<div class=\"map\">\n${ $json.gps_ursprung?.maps?.gmaps\n? '<a href=\"' + esc($json.gps_ursprung.maps.gmaps) + '\">🗺️ Google Maps öffnen</a>'\n: '<span style=\"color:var(--muted)\">Kein Kartenlink verfügbar</span>'\n}\n<br/>\n${ $json.gps_ursprung?.maps?.osm\n? '<a href=\"' + esc($json.gps_ursprung.maps.osm) + '\">🗺️ OpenStreetMap öffnen</a>'\n: ''\n}\n<br/>\n${ $json.gps_ursprung?.maps?.apple\n? '<a href=\"' + esc($json.gps_ursprung.maps.apple) + '\">🗺️ Apple Maps öffnen</a>'\n: ''\n}\n</div>\n        </div>\n      </div>\n\n      <div class=\"card card--zustimmung\">\n        <div class=\"card-h\">Zustimmung</div>\n        <div class=\"card-b\">\n          <div class=\"consent\">\n            <div class=\"consent-check\">✓</div>\n            <div class=\"consent-text\">Zustimmung des Nutzers (${esc(meta.verantwortlicher || '—')})</div>\n          </div>\n          <div class=\"consent-note\">Diese digitale Zustimmung per Haken repräsentiert eine Unterschrift des Nutzers.</div>\n        </div>\n      </div>\n\n    </div>\n  </div>\n</body>\n</html>\n`;\n\n// Header-Template\nconst headerTemplate = `\n  <style>${hcss}</style>\n  <div class=\"wrap\">\n    <div class=\"grid\">\n      <div class=\"left\">\n        ${THEME.logoLeft ? `<img class=\"logo\" src=\"${THEME.logoLeft}\" alt=\"Logo left\">` : ''}\n      </div>\n      <div class=\"center\">\n        ${THEME.logoCenter ? `<img class=\"logo center\" src=\"${THEME.logoCenter}\" alt=\"Logo center\">` : ''}\n        <strong>Forstauftrag</strong>\n      </div>\n      <div class=\"right\">\n        ${THEME.logoRight ? `<img class=\"logo\" src=\"${THEME.logoRight}\" alt=\"Logo right\">` : ''}\n      </div>\n    </div>\n    <div class=\"muted\">Einsatzort: ${esc(meta.einsatzort || '—')} · ${esc(now)}</div>\n  </div>\n`;\n\n// === CHROMIUM FOOTER ===\nconst footerTemplate = `\n  <style>${fcss}</style>\n  <div class=\"wrap\">\n    <div class=\"row\">\n      <div class=\"col\">\n        ${THEME.logoLeft ? `<img src=\"${THEME.logoLeft}\" alt=\"Logo\"/>` : ''}\n        <strong>Ryzeup UG</strong>\n        <span>Rotthang 3, 84494 Neumarkt-Sankt Veit</span>\n        <span>HRB 33167, AG Traunstein</span>\n      </div>\n      <div class=\"col\">\n        <a>Kontakt</a><a>About</a><a>Termin</a><a>Datenschutz</a>\n        <span class=\"num\"><span class=\"pageNumber\"></span>/<span class=\"totalPages\"></span></span>\n      </div>\n    </div>\n    <div class=\"row\" style=\"margin-top:4px\">\n      <div>© ${new Date().getFullYear()} Ryzeup UG. Alle Rechte vorbehalten.</div>\n    </div>\n  </div>\n`;\n\n// === EMPFOHLENE DRUCK-RÄNDER FÜR Gotenberg/Chromium ===\n// Diese Werte musst du beim HTTP Request mitgeben (siehe unten).\nconst printOptions = {\n  paperWidth:  8.27,  // A4 in Inch\n  paperHeight: 11.69, // A4 in Inch\n  marginTop:    0.83,  // ~15 mm\n  marginBottom: 0.67,  // ~15 mm\n  marginLeft:   0, // 10 mm\n  marginRight:  0, // 10 mm\n  printBackground: true,\n  scale: 1,\n};\n\n// ---------- Robustheits-Footer für pdf-template.js ----------\n\nconst MAX_ATTEMPTS = 5;\nconst BASE_DELAY_MS = 500;\nconst JITTER_MS = 250;\n\nconst sleep = (ms) => new Promise(r => setTimeout(r, ms));\n\nfunction get(obj, path) {\n  return path.split('.').reduce((o, k) => (o && o[k] !== undefined ? o[k] : undefined), obj);\n}\n\nfunction hasAll(paths, root) {\n  return paths.every(p => {\n    const v = get(root, p);\n    return v !== undefined && v !== null && !(typeof v === 'string' && v.trim() === '');\n  });\n}\n\n// Wenn du Daten aus benannten Nodes brauchst, kannst du sie hier mergen.\nfunction isReady() {\n  return true;\n}\n\n// Achtung: Wir geben bewusst KEIN ...item.json zurück, um Payload-Aufblähung & Zyklen zu verhindern.\nasync function finalizePdfSafe(buildFn) {\n  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {\n    if (isReady()) {\n      const result = buildFn();\n\n      // Mini-Validierung gegen leere PDFs\n      if (!result || !result.html || typeof result.html !== 'string' || result.html.trim() === '') {\n        throw new Error('TransientError: html not built yet');\n      }\n\n      // N8N-Format: Array von Items mit { json: ... }\n      return { json: result };\n    }\n    if (attempt < MAX_ATTEMPTS) {\n      const backoff = BASE_DELAY_MS * Math.pow(2, attempt - 1);\n      const jitter = Math.floor(Math.random() * JITTER_MS);\n      const wait = backoff + jitter;\n      console.log(`[pdf-template] Inputs not ready (${attempt}/${MAX_ATTEMPTS - 1}). Wait ${wait}ms`);\n      await sleep(wait);\n    }\n  }\n  throw new Error('TransientError: PDF template inputs not ready');\n}\n\n// ---------- ENDE Robustheits-Footer ----------\n\nfunction buildOriginalReturn() {\n  return {\n    html,\n    headerTemplate,\n    footerTemplate,\n    printOptions,\n    // << NEU: nur was der nächste Node zum Benennen braucht\n    metaForFilename: {\n      einsatzort: meta.einsatzort || '',\n      datum: meta.datum || ''   // deine Formular-Datumsspalte\n    }\n  };\n}\n\nreturn await finalizePdfSafe(buildOriginalReturn);\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -1712,
-        48
+        -1824,
+        -96
       ],
       "id": "b7ed8196-7d6a-4bd1-b494-d1d344be3a33",
       "name": "pdf-template.js"
@@ -680,8 +628,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -3264,
-        -64
+        -3616,
+        -176
       ],
       "id": "f5441e08-bba1-40b7-9434-9a43a11db389",
       "name": "ryzeup-logo",
@@ -704,8 +652,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -2816,
-        144
+        -3168,
+        0
       ],
       "id": "f41c5b17-89b5-4a48-83b3-5ebdaecc2072",
       "name": "fa-logo"
@@ -715,14 +663,14 @@
         "mode": "combine",
         "combineBy": "combineByPosition",
         "options": {
-          "includeUnpaired": false
+          "includeUnpaired": true
         }
       },
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        -1936,
-        48
+        -2048,
+        -96
       ],
       "id": "fa078c5e-93ec-4b73-bb4c-7ce4740c165f",
       "name": "data+logos"
@@ -742,8 +690,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -3264,
-        144
+        -3616,
+        32
       ],
       "id": "019b374a-d1c8-420e-ba5f-f72e77445386",
       "name": "Bg-logo"
@@ -757,8 +705,8 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        -2592,
-        96
+        -2944,
+        -48
       ],
       "id": "8c559737-c6b1-484d-b00f-923bd4b510f2",
       "name": "merge-logos"
@@ -772,8 +720,8 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        -3040,
-        96
+        -3392,
+        -48
       ],
       "id": "14885d29-eace-435b-8379-96b16f447ab3",
       "name": "MergeA"
@@ -785,8 +733,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -592,
-        48
+        -704,
+        -96
       ],
       "id": "2785efee-73e8-41f0-a14d-c4231615580a",
       "name": "pdf-filename"
@@ -799,8 +747,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -3456,
-        -608
+        -3616,
+        -672
       ],
       "id": "bbda2381-14f3-47ff-9537-74b93fe0fc32",
       "name": "pull-query-to-json"
@@ -810,15 +758,15 @@
         "assignments": {
           "assignments": [
             {
-              "id": "29789d18-8ea3-456b-8369-5bea39bd3d2e",
-              "name": "Standortdaten - latitude (erster Wert in GoogleMaps)",
-              "value": "={{ $json[\"Standortdaten - latitude (erster Wert in GoogleMaps)\"] }}",
+              "id": "9b20c06e-db7e-4a69-9fc4-73ceffa4b16a",
+              "name": "formQueryParameters.lat",
+              "value": "={{ $('On form submission1').item.json.formQueryParameters.lat }}",
               "type": "string"
             },
             {
-              "id": "6aec88c8-a769-4d67-94d1-f02e0c8865f2",
-              "name": "Standortdaten - longitude (zweiter Wert in GoogleMaps)",
-              "value": "={{ $json[\"Standortdaten - longitude (zweiter Wert in GoogleMaps)\"] }}",
+              "id": "863e8f1c-9ece-4802-abff-d8c2c464843b",
+              "name": "formQueryParameters.lon",
+              "value": "={{ $('On form submission1').item.json.formQueryParameters.lon }}",
               "type": "string"
             }
           ]
@@ -828,14 +776,80 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -3088,
-        -480
+        -3168,
+        -544
       ],
       "id": "0319143f-8c5e-4e18-a87b-07649676da9b",
       "name": "geo-set"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1) GPS-Quelle: Form3 bevorzugt; Fallback: Form1; zusätzlich formQueryParameters (lat/lon)\nfunction getFormNode() {\nconst f3 = $('Form3').first();\nif (f3 && f3.json) return { name: 'Form3', json: f3.json };\nconst f1 = $('Form1').first();\nif (f1 && f1.json) return { name: 'Form1', json: f1.json };\nreturn { name: null, json: null };\n}\nconst { name: formNodeName, json: form } = getFormNode();\n\n// Robust: Koordinaten aus Formularfeldern ODER formQueryParameters\nconst latStr = form?.['Standortdaten - latitude (erster Wert in GoogleMaps)'];\nconst lonStr = form?.['Standortdaten - longitude (zweiter Wert in GoogleMaps)'];\nconst qpLat = form?.formQueryParameters?.lat;\nconst qpLon = form?.formQueryParameters?.lon;\n\n// Helper: Kommas & Strings tolerant parsen\nfunction toNum(v) {\nif (v === null || v === undefined) return NaN;\nreturn Number.parseFloat(String(v).replace(',', '.').trim());\n}\n\nlet latitude = toNum(latStr);\nlet longitude = toNum(lonStr);\nlet source = 'form_fields';\nif (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {\nlatitude = toNum(qpLat);\nlongitude = toNum(qpLon);\nif (Number.isFinite(latitude) && Number.isFinite(longitude)) {\nsource = 'formQueryParameters:lat|lon';\n}\n}\n\n// Wenn weiterhin keine gültigen Koordinaten → leer zurückgeben (aber nicht hart failen)\nif (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {\nreturn [{\njson: {\ngps_ursprung: null,\ntop_3_rettungspunkte: [],\nnaechster_rettungspunkt: null,\nhinweis: 'Kein gültiges GPS im Formular gefunden.',\ndebug: {\nform_node_found: !!form,\nform_node_name: formNodeName ?? null,\nform_keys: form ? Object.keys(form) : []\n}\n}\n}];\n}\n\n// 2) Rettungspunkte kommen als Items vom Supabase-Node\nconst rettungspunkte = $items();\n\n// 3) Haversine – Meter\nfunction distM(lat1, lon1, lat2, lon2) {\nconst R = 6371e3, toRad = d => d * Math.PI / 180;\nconst φ1 = toRad(lat1), φ2 = toRad(lat2);\nconst Δφ = toRad(lat2 - lat1), Δλ = toRad(lon2 - lon1);\nconst a = Math.sin(Δφ/2)**2 + Math.cos(φ1)*Math.cos(φ2)*Math.sin(Δλ/2)**2;\nreturn 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)) * R;\n}\n\n// 4) Maps-Link-Builder (Google, OSM, Apple)\nfunction mapsFor(lat, lon, label = 'Standort') {\nconst latS = Number(lat).toFixed(6);\nconst lonS = Number(lon).toFixed(6);\nconst q = `${latS},${lonS}`;\nreturn {\ngmaps: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`,\nosm: `https://www.openstreetmap.org/?mlat=${latS}&mlon=${lonS}#map=17/${latS}/${lonS}`,\napple: `https://maps.apple.com/?ll=${latS},${lonS}&q=${encodeURIComponent(label)}`\n};\n}\n\n// 5) Distanzen + Links berechnen\nconst list = rettungspunkte.map(p => {\nconst latP = toNum(p.json.wgs_breite);\nconst lonP = toNum(p.json.wgs_laenge);\nif (!Number.isFinite(latP) || !Number.isFinite(lonP)) return null;\nconst m = Math.round(distM(latitude, longitude, latP, lonP));\nconst maps = mapsFor(latP, lonP, `Rettungspunkt ${p.json.rp_nr ?? ''}`.trim());\nreturn {\nrp_nr: p.json.rp_nr,\nentfernung_m: m,\nentfernung_text: m < 1000 ? `${m} m` : `${(m/1000).toFixed(2)} km`,\nlat: latP, lon: lonP,\nid: p.json.id,\nbeschreibung: p.json.beschreibung,\nbundesland: p.json.bundesland,\nmaps\n};\n}).filter(Boolean);\n\nif (!list.length) {\nreturn [{\njson: {\ngps_ursprung: { latitude, longitude, source, maps: mapsFor(latitude, longitude) },\ntop_3_rettungspunkte: [],\nnaechster_rettungspunkt: null\n}\n}];\n}\n\n// 6) Sortierung & Output\nconst top3 = list.sort((a,b) => a.entfernung_m - b.entfernung_m).slice(0, 3);\nreturn [{\njson: {\ngps_ursprung: { latitude, longitude, source, maps: mapsFor(latitude, longitude, 'Einsatzort') },\ntop_3_rettungspunkte: top3,\nnaechster_rettungspunkt: top3[0]\n}\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2496,
+        -496
+      ],
+      "id": "d07bcea4-a03c-40c2-8baf-d15c425f0f1d",
+      "name": "harvesine"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1B56Kah2t7Dz84usjQfQNnefK3R2rgQGO0H2hRndCtzc",
+          "mode": "list",
+          "cachedResultName": "auftragsdaten",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1B56Kah2t7Dz84usjQfQNnefK3R2rgQGO0H2hRndCtzc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Tabellenblatt1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1B56Kah2t7Dz84usjQfQNnefK3R2rgQGO0H2hRndCtzc/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -2048,
+        -720
+      ],
+      "id": "8494ed31-cf4f-4eb6-af30-da3f3efda239",
+      "name": "Get row(s) in sheet",
+      "alwaysOutputData": false,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "awTBm5n9jFsyxPvL",
+          "name": "Google Sheets rusmir-projects"
+        }
+      }
     }
   ],
-  "pinData": {},
+  "pinData": {
+    "On form submission1": [
+      {
+        "json": {
+          "Datum Arbeitstag: ": "2025-09-17",
+          "Einsatzort": "Ort",
+          "Arbeitsverantwortlicher": "ru",
+          "weitere Einsatzkräfte:": "e",
+          "Ansprechpartner Kunde: ": "e",
+          "Kunde Telefon: ": 444,
+          "Ersthelfer vor Ort: ": "d",
+          "submittedAt": "2025-09-17T05:40:17.279+02:00",
+          "formMode": "production",
+          "formQueryParameters": {
+            "noGeo": "1"
+          }
+        }
+      }
+    ]
+  },
   "connections": {
     "Move Binary Data (HTML file)": {
       "main": [
@@ -915,7 +929,7 @@
       "main": [
         [
           {
-            "node": "Harvesine",
+            "node": "harvesine",
             "type": "main",
             "index": 0
           }
@@ -948,7 +962,7 @@
       "main": [
         [
           {
-            "node": "Append row in sheet",
+            "node": "Get row(s) in sheet",
             "type": "main",
             "index": 0
           },
@@ -967,17 +981,6 @@
             "node": "Merge2",
             "type": "main",
             "index": 0
-          }
-        ]
-      ]
-    },
-    "Harvesine": {
-      "main": [
-        [
-          {
-            "node": "Merge2",
-            "type": "main",
-            "index": 1
           }
         ]
       ]
@@ -1129,13 +1132,25 @@
           }
         ]
       ]
+    },
+    "harvesine": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
     }
   },
   "active": true,
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner"
   },
-  "versionId": "189206c5-6a52-4cb0-ba11-d80ea7edcbe8",
+  "versionId": "2d242354-c0e3-43d8-ba44-168f04ad8a34",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "2a3eab6b88b8510864f912a25810c5ba12780e3df16b467154212c331aaa0bdb"
