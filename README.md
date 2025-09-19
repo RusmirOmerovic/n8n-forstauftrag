@@ -1,3 +1,4 @@
+![](img/fa-logo.png)
 # Forstauftrag – End-to-End Workflow (n8n → Gotenberg PDF)
 
 Dieses Projekt erzeugt aus Web-Formularen (inkl. optionaler GPS-Daten zur automatischen Ermittlung von Rettungspunkten) strukturierte **Arbeitsaufträge als PDF**. Besonderheiten:
@@ -34,6 +35,7 @@ Browser (index.html)
 └─ Ausgabe: Datei + Google Sheet + Notification
 ```
 
+![](img/start.png)
 - **Frontend**: `index.html` als Einstiegsseite (Entscheidung zu GPS).
 - **n8n**: Workflow-Knoten inkl. `Code`, `Move Binary Data`, `HTTP Request (Gotenberg)`, `Append Row`.
 - **PDF**: via `/forms/chromium/convert/html` mit Header/Footer.
@@ -51,6 +53,8 @@ Browser (index.html)
    Code-Node erzeugt `html`, `headerTemplate`, `footerTemplate` → Gotenberg rendert.
 5. **Persistenz/Versand**  
    Datei speichern (Binary), Google Sheets `Append Row`, optional Notifications.
+
+![](img/workflow.png)
 
 ## Voraussetzungen
 
@@ -144,28 +148,17 @@ Die Templates werden **im Code-Node** definiert (siehe Abschnitt „Design-Token
 - **Schriften**  
   - Nur Web-safe Fonts verwenden oder lokal einbetten (inline `@font-face` → beachten, dass Chromium innerhalb Gotenberg teilweise restriktiv ist).
 
-## Screenshots
+## Ergebnis Ausgaben
+### Automatisch generiertes und gesendetes PDF-Dokuments (Ausschnitt + Link zum ganzen PDF)
+![](img/pdf.png)
 
-Füge in `img/` Screenshots hinzu (Beispiele bereits vorhanden). Empfohlene Liste:
+[➡️ Zum vollständigen PDF](img/FA_16-09-2025_Ebersberg.pdf)
 
-- `img/neu-auftrag.png` – Startseite (`index.html`)
-- `img/forstauftrag-workflow.png` – n8n Workflow-Übersicht
-- `img/alt-auftrag.png` – Formular
-- `img/auftrag-logo.png` – Branding
-- Beispiel-PDF-Ausschnitte: Header, Footer, Rettungspunkte, Wetter
+### Eintrag in ein Google Sheet um Liste zu führen (Beispiel)
 
-Markdown-Beispiele:
+![](img/sheets.png)
 
 ```markdown
-![Startseite](img/neu-auftrag.png)
-![Workflow](img/forstauftrag-workflow.png)
-
-Versionierung & Lizenz
-	•	Versionen per Git-Tags (vX.Y.Z), Changelog im Repo führen.
-	•	Lizenz nach Bedarf ergänzen.
-
----
-
 ## Nächste sinnvolle Verfeinerungen (optional)
 
 - **Brand-Switch per Kunde**: THEME als Item-Felder (`theme.brandBg` etc.), um Kunden-Branding dynamisch zu laden.
