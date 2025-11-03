@@ -2,7 +2,6 @@
 
 Eine kleine Vorschau des Workflows:
 
-
 # Forstauftrag – End-to-End Workflow (n8n → Gotenberg PDF)
 
 Dieses Projekt erzeugt aus Web-Formularen (inkl. optionaler GPS-Daten zur automatischen Ermittlung von Rettungspunkten) strukturierte **Arbeitsaufträge als PDF**. Besonderheiten:
