@@ -1,2 +1,5 @@
 # In .gitignore einfügen
 .DS_Store
+*.mp4
+*.MP4
+*.mov
